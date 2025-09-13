@@ -1,12 +1,39 @@
 import logging
 
-from aiogram import Router
+from aiogram import Router, html
+from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 logger = logging.getLogger(__name__)
 
 router = Router()
+
+
+def make_keyboard() -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text="В список",
+                callback_data="to_list"
+            ),
+            InlineKeyboardButton(
+                text="В неразобранное",
+                callback_data="to_unassembled"
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Редактировать",
+                callback_data="edit"
+            ),
+            InlineKeyboardButton(
+                text="Отмена",
+                callback_data="cancel"
+            )
+        ],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 @router.message(CommandStart())
@@ -22,14 +49,13 @@ async def cmd_start(message: Message):
     )
 
 
-
-
-
 @router.message()
-async def send_echo(message: Message):
-    logger.debug("Сообщение попало в хэндлер %s", send_echo.__name__)
+async def get_task(message: Message):
+    logger.debug("Сообщение попало в хэндлер %s", get_task.__name__)
     try:
-        await message.send_copy(chat_id=message.chat.id,
-                                reply_to_message_id=message.message_id)
+        await message.answer(
+            text=message.html_text,
+            reply_markup=make_keyboard()
+        )
     except TypeError:
         await message.reply("Какое-то необычное сообщение для меня.")
