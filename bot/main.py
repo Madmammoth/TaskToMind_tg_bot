@@ -1,15 +1,24 @@
+import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-from config_data.config import Config
+from bot.handlers import get_routers
+from config_data.config import Config, load_config
+
+config: Config = load_config()
+
+logging.basicConfig(
+    level=logging.getLevelName(level=config.log_settings.level),
+    format=config.log_settings.format,
+)
 
 logger = logging.getLogger(__name__)
 
 
-async def main(config: Config):
+async def main():
     logger.info("Starting bot...")
     bot = Bot(
         token=config.bot_settings.token.get_secret_value(),
@@ -17,7 +26,7 @@ async def main(config: Config):
     )
     dp = Dispatcher()
     logger.info("Including routers...")
-    # dp.include_routers(*get_routers)
+    dp.include_routers(*get_routers())
     logger.info("Including middlewares...")
     # dp.update.middleware(SomeMiddleware)
     try:
@@ -27,3 +36,6 @@ async def main(config: Config):
         )
     except Exception as e:
         logger.exception(e)
+
+
+asyncio.run(main())
