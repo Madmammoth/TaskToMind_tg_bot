@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram_dialog import setup_dialogs
 
 from bot.handlers import get_routers
 from config_data.config import Config, load_config
@@ -27,6 +28,7 @@ async def main():
     dp = Dispatcher()
     logger.info("Including routers...")
     dp.include_routers(*get_routers())
+    setup_dialogs(dp)
     logger.info("Including middlewares...")
     # dp.update.middleware(SomeMiddleware)
     try:
