@@ -62,6 +62,9 @@ async def cmd_start(message: Message):
         user_data: dict[str, Any] = deepcopy(template_data_for_new_user)
         user_data["username"] = username
         fake_database[user_id] = user_data
+        logger.debug("Пользователь %s (id: %d) добавлен в базу данных")
+    else:
+        logger.debug("Пользователь %s (id: %d) уже есть в базе данных")
     await message.answer(
         f"Приветствую, {username}!\n\nЯ — бот, который со временем "
         "станет твоим удобным и надёжным планировщиком дел, "
@@ -88,12 +91,12 @@ async def on_inbox_click_process(
 
 
 async def get_lists(event_from_user: User, **kwargs) -> dict:
-    logger.debug("Сообщение попало в геттер %s", get_lists.__name__)
+    logger.debug("Апдейт попал в геттер %s", get_lists.__name__)
     return fake_database[event_from_user.id]
 
 
 async def get_task(dialog_manager: DialogManager, **kwargs):
-    logger.debug("Сообщение попало в геттер %s", get_task.__name__)
+    logger.debug("Апдейт попал в геттер %s", get_task.__name__)
     return dialog_manager.start_data
 
 
@@ -116,11 +119,12 @@ menu_task_dialog = Dialog(
 
 @router.message(F.text)
 async def get_task_process(message: Message, dialog_manager: DialogManager):
+    logger.debug("Апдейт попал в хэндлер %s", get_task_process.__name__)
     await dialog_manager.start(state=GetTaskDialogSG.menu_window,
                                data={"task": message.html_text})
 
 
 @router.message()
 async def other_msgs_process(message: Message):
-    logger.debug("Сообщение попало в хэндлер %s", get_task.__name__)
+    logger.debug("Апдейт попал в хэндлер %s", other_msgs_process.__name__)
     await message.reply("Какое-то необычное сообщение для меня.")
