@@ -1,9 +1,10 @@
 from aiogram import Router
 
-from bot.handlers import basic
+from .basic import router, menu_task_dialog
 
 
 def get_routers() -> list[Router]:
     return [
-        basic.router,
+        router,
+        menu_task_dialog
     ]
