@@ -1,15 +1,16 @@
 import logging
+import operator
 from copy import deepcopy
 from typing import Any
 
 from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import (
-    Message, InlineKeyboardMarkup, InlineKeyboardButton, User, CallbackQuery, Update
+    Message, InlineKeyboardMarkup, InlineKeyboardButton, User, CallbackQuery
 )
 from aiogram_dialog import Dialog, Window, DialogManager
-from aiogram_dialog.widgets.kbd import Row, Button
-from aiogram_dialog.widgets.text import Const, Format
+from aiogram_dialog.widgets.kbd import Row, Button, Select
+from aiogram_dialog.widgets.text import Const, Format, Jinja
 
 from bot.dialogs.states import GetTaskDialogSG
 
@@ -62,9 +63,9 @@ async def cmd_start(message: Message):
         user_data: dict[str, Any] = deepcopy(template_data_for_new_user)
         user_data["username"] = username
         fake_database[user_id] = user_data
-        logger.debug("Пользователь %s (id: %d) добавлен в базу данных")
+        logger.debug("Пользователь %s (id: %d) добавлен в базу данных", username, user_id)
     else:
-        logger.debug("Пользователь %s (id: %d) уже есть в базе данных")
+        logger.debug("Пользователь %s (id: %d) уже есть в базе данных", username, user_id)
     await message.answer(
         f"Приветствую, {username}!\n\nЯ — бот, который со временем "
         "станет твоим удобным и надёжным планировщиком дел, "
@@ -74,12 +75,13 @@ async def cmd_start(message: Message):
     )
 
 
-async def on_lists_click_process(
+async def go_lists(
         callback: CallbackQuery,
         widget: Button,
         dialog_manager: DialogManager
 ):
-    pass
+    logger.debug("Переход в окно со списками. Функция %s", go_lists.__name__)
+    await dialog_manager.switch_to(state=GetTaskDialogSG.lists_window)
 
 
 async def on_inbox_click_process(
@@ -90,9 +92,19 @@ async def on_inbox_click_process(
     pass
 
 
-async def get_lists(event_from_user: User, **kwargs) -> dict:
+async def get_lists(
+        dialog_manager: DialogManager,
+        event_from_user: User, **kwargs
+) -> dict[str, list[dict[str, int | Any]]]:
     logger.debug("Апдейт попал в геттер %s", get_lists.__name__)
-    return fake_database[event_from_user.id]
+    user_lists = fake_database[event_from_user.id]["lists"].keys()
+    user_lists_dict = [{"number": number, "title": user_list}
+                       for number, user_list
+                       in enumerate(user_lists, start=1)]
+    user_lists = [(number, user_list)
+                  for number, user_list
+                  in enumerate(user_lists, start=1)]
+    return {"user_lists_dict": user_lists_dict, "user_lists": user_lists}
 
 
 async def get_task(dialog_manager: DialogManager, **kwargs):
@@ -100,19 +112,34 @@ async def get_task(dialog_manager: DialogManager, **kwargs):
     return dialog_manager.start_data
 
 
-menu_task_dialog = Dialog(
+menu_task = Dialog(
     Window(
         Format("{task}"),
         Row(
             Button(text=Const("Списки"),
                    id="lists",
-                   on_click=on_lists_click_process),
+                   on_click=go_lists),
             Button(text=Const("Входящие"),
                    id="inbox",
                    on_click=on_inbox_click_process),
         ),
         getter=get_task,
         state=GetTaskDialogSG.menu_window
+    ),
+    Window(
+        Jinja("""
+{% for user_list in user_lists_dict %}
+<b>{{ user_list.number }}</b>. {{ user_list.title }}
+{% endfor %}
+        """),
+        Select(
+            Format("{item[0]}"),
+            id="list",
+            item_id_getter=operator.itemgetter(0),
+            items="user_lists"
+        ),
+        getter=get_lists,
+        state=GetTaskDialogSG.lists_window
     ),
 )
 
