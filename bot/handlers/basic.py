@@ -58,14 +58,22 @@ def make_keyboard() -> InlineKeyboardMarkup:
 async def cmd_start(message: Message):
     logger.debug("Сообщение попало в хэндлер %s", cmd_start.__name__)
     username = message.from_user.username
+    first_name = message.from_user.first_name
     user_id = message.from_user.id
     if user_id not in fake_database:
         user_data: dict[str, Any] = deepcopy(template_data_for_new_user)
-        user_data["username"] = username
+        user_data.update(username=username, first_name=first_name)
         fake_database[user_id] = user_data
-        logger.debug("Пользователь %s (id: %d) добавлен в базу данных", username, user_id)
+        print(fake_database)
+        logger.debug(
+            "Пользователь %s (имя: %s, id: %d) добавлен в базу данных",
+            username, first_name, user_id
+        )
     else:
-        logger.debug("Пользователь %s (id: %d) уже есть в базе данных", username, user_id)
+        logger.debug(
+            "Пользователь %s (имя: %s, id: %d) уже есть в базе данных",
+            username, first_name, user_id
+        )
     await message.answer(
         f"Приветствую, {username}!\n\nЯ — бот, который со временем "
         "станет твоим удобным и надёжным планировщиком дел, "
