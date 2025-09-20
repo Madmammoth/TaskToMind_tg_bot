@@ -101,6 +101,23 @@ async def add_task(
                                data={"task": text})
 
 
+async def go_back_to_add_task(
+        callback: CallbackQuery,
+        widget: Button,
+        dialog_manager: DialogManager
+):
+    await dialog_manager.switch_to(state=GetTaskDialogSG.add_task_window)
+
+
+async def go_cancel_yes(
+        callback: CallbackQuery,
+        widget: Button,
+        dialog_manager: DialogManager
+):
+    await dialog_manager.start(state=StartSG.start_window,
+                               mode=StartMode.RESET_STACK)
+
+
 async def input_task(
         callback: CallbackQuery,
         widget: Button,
@@ -290,6 +307,18 @@ add_task_dialog = Dialog(
         ),
         getter=get_task,
         state=GetTaskDialogSG.add_task_window
+    ),
+    Window(
+        Const("Вы уверены, что хотите отменить добавление задачи?"),
+        Row(
+            Button(text=Const("Да"),
+                   id="yes",
+                   on_click=go_cancel_yes),
+            Button(text=Const("Нет"),
+                   id="no",
+                   on_click=go_back_to_add_task),
+        ),
+        state=GetTaskDialogSG.cancel_window
     ),
 )
 
