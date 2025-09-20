@@ -2,13 +2,12 @@ import logging
 from copy import deepcopy
 from typing import Any
 
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
 from bot.flows.start.states import StartSG
-from bot.flows.add_task.states import GetTaskDialogSG
 
 logger = logging.getLogger(__name__)
 
@@ -55,18 +54,3 @@ async def cmd_start(
     )
     await dialog_manager.start(state=StartSG.start_window,
                                mode=StartMode.RESET_STACK)
-
-
-@commands_router.message(F.text)
-async def get_task_handler(message: Message, dialog_manager: DialogManager):
-    logger.debug("Апдейт попал в хэндлер %s", get_task_handler.__name__)
-    await dialog_manager.start(
-        state=GetTaskDialogSG.add_task_window,
-        data={"message_id": message.message_id, "task": message.html_text}
-    )
-
-
-@commands_router.message()
-async def other_msgs_process(message: Message):
-    logger.debug("Апдейт попал в хэндлер %s", other_msgs_process.__name__)
-    await message.reply("Какое-то необычное сообщение для меня.")
