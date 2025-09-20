@@ -12,7 +12,7 @@ from bot.flows.add_task.states import GetTaskDialogSG
 
 logger = logging.getLogger(__name__)
 
-router = Router()
+commands_router = Router()
 
 fake_database = {}
 template_data_for_new_user = {
@@ -24,7 +24,7 @@ template_data_for_new_user = {
 }
 
 
-@router.message(CommandStart())
+@commands_router.message(CommandStart())
 async def cmd_start(
         message: Message,
         dialog_manager: DialogManager
@@ -57,7 +57,7 @@ async def cmd_start(
                                mode=StartMode.RESET_STACK)
 
 
-@router.message(F.text)
+@commands_router.message(F.text)
 async def get_task_handler(message: Message, dialog_manager: DialogManager):
     logger.debug("Апдейт попал в хэндлер %s", get_task_handler.__name__)
     await dialog_manager.start(
@@ -66,7 +66,7 @@ async def get_task_handler(message: Message, dialog_manager: DialogManager):
     )
 
 
-@router.message()
+@commands_router.message()
 async def other_msgs_process(message: Message):
     logger.debug("Апдейт попал в хэндлер %s", other_msgs_process.__name__)
     await message.reply("Какое-то необычное сообщение для меня.")
