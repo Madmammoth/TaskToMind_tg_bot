@@ -21,14 +21,6 @@ async def go_tasks(
     )
 
 
-async def go_back_to_add_task(
-        callback: CallbackQuery,
-        widget: Button,
-        dialog_manager: DialogManager
-):
-    await dialog_manager.switch_to(state=GetTaskDialogSG.add_task_window)
-
-
 async def go_cancel_yes(
         callback: CallbackQuery,
         widget: Button,
@@ -51,15 +43,3 @@ async def go_inbox(
         dialog_manager: DialogManager
 ):
     pass
-
-
-async def go_cancel(
-        callback: CallbackQuery,
-        widget: Button,
-        dialog_manager: DialogManager
-):
-    logger.debug(
-        "Переход в окно отмены добавления задачи. Функция %s",
-        go_cancel.__name__
-    )
-    await dialog_manager.switch_to(state=GetTaskDialogSG.cancel_window)
