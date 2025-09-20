@@ -1,6 +1,8 @@
 from aiogram import Router
 
-from .basic import router, add_task_dialog, start_dialog
+from .basic import router
+from ..flows.start.dialog import start_dialog
+from ..flows.add_task.dialog import add_task_dialog
 
 
 def get_routers() -> list[Router]:
