@@ -7,7 +7,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from bot.flows.start.states import StartSG
+from bot.dialogs.states import StartSG
 from database.db import fake_database, template_data_for_new_user
 
 logger = logging.getLogger(__name__)

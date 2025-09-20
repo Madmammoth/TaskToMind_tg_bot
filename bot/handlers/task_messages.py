@@ -4,7 +4,7 @@ from aiogram import F, Router
 from aiogram.types import Message
 from aiogram_dialog import DialogManager
 
-from bot.flows.add_task.states import GetTaskDialogSG
+from bot.dialogs.states import GetTaskDialogSG
 
 logger = logging.getLogger(__name__)
 

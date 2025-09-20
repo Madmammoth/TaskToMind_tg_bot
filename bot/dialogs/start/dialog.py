@@ -3,9 +3,9 @@ from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Row, Button
 from aiogram_dialog.widgets.text import Const
 
-from bot.flows.add_task.handlers import go_tasks
-from bot.flows.start.states import StartSG
-from bot.flows.start.handlers import add_task, input_task, go_settings, go_features, go_support
+from bot.dialogs.add_task.handlers import go_tasks
+from bot.dialogs.states import StartSG
+from bot.dialogs.start.handlers import add_task, input_task, go_settings, go_features, go_support
 
 start_dialog = Dialog(
     Window(

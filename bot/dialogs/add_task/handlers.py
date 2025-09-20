@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager, StartMode
 from aiogram_dialog.widgets.kbd import Button
 
-from bot.flows.start.states import StartSG
+from bot.dialogs.states import StartSG
 
 logger = logging.getLogger(__name__)
 

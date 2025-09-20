@@ -6,7 +6,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram_dialog import setup_dialogs
 
-from bot.flows import dialogs
+from bot.dialogs import dialogs
 from bot.handlers import routers
 from config_data.config import Config, load_config
 
