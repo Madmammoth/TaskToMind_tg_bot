@@ -237,16 +237,18 @@ start_dialog = Dialog(
             Button(text=Const("Посмотреть задачи"),
                    id="tasks",
                    on_click=go_tasks),
+        ),
+        Row(
             Button(text=Const("Настройки"),
                    id="settings",
                    on_click=go_settings),
             Button(text=Const("Возможности бота"),
                    id="features",
                    on_click=go_features),
-            Button(text=Const("Поддержка"),
-                   id="support",
-                   on_click=go_support),
         ),
+        Button(text=Const("Поддержка"),
+               id="support",
+               on_click=go_support),
         state=StartSG.start_window
     ),
 )
