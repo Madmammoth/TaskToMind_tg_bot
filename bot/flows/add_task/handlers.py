@@ -1,10 +1,12 @@
+import logging
+
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager, StartMode
 from aiogram_dialog.widgets.kbd import Button
 
 from bot.flows.start.states import StartSG
-from bot.flows.add_task.states import GetTaskDialogSG
-from bot.handlers.commands import logger
+
+logger = logging.getLogger(__name__)
 
 
 async def go_tasks(

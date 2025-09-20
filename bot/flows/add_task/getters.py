@@ -1,10 +1,14 @@
+import logging
 from copy import deepcopy
 from typing import Any
 
 from aiogram.types import User
 from aiogram_dialog import DialogManager
 
-from bot.handlers.commands import logger, fake_database, template_data_for_new_user
+from bot.handlers.commands import fake_database, template_data_for_new_user
+
+logger = logging.getLogger(__name__)
+
 
 
 async def get_lists(

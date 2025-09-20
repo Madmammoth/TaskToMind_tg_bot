@@ -1,3 +1,5 @@
+import logging
+
 from aiogram.types import Message, CallbackQuery
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import ManagedTextInput
@@ -5,7 +7,8 @@ from aiogram_dialog.widgets.kbd import Button
 
 from bot.flows.start.states import StartSG
 from bot.flows.add_task.states import GetTaskDialogSG
-from bot.handlers.commands import logger
+
+logger = logging.getLogger(__name__)
 
 
 async def add_task(
