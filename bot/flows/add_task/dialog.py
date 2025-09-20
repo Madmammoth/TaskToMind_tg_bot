@@ -2,7 +2,7 @@ from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.kbd import Row, Button
 from aiogram_dialog.widgets.text import Format, Const
 
-from bot.flows.start.states import GetTaskDialogSG
+from bot.flows.add_task.states import GetTaskDialogSG
 from bot.flows.add_task.getters import get_task
 from bot.flows.add_task.handlers import go_tasks, go_back_to_add_task, go_cancel_yes, go_inbox, go_cancel
 
