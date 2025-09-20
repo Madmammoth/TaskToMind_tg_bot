@@ -8,6 +8,7 @@ from aiogram.types import (
     Message, InlineKeyboardMarkup, InlineKeyboardButton, User, CallbackQuery
 )
 from aiogram_dialog import Dialog, Window, DialogManager, StartMode
+from aiogram_dialog.widgets.input import TextInput, ManagedTextInput
 from aiogram_dialog.widgets.kbd import Row, Button
 from aiogram_dialog.widgets.text import Const, Format
 
@@ -86,17 +87,30 @@ async def cmd_start(
                                mode=StartMode.RESET_STACK)
 
 
-async def start_add_task(
+async def add_task(
+        message: Message,
+        widget: ManagedTextInput,
+        dialog_manager: DialogManager,
+        text: str
+):
+    logger.debug(
+        "Запуск диалога добавления задачи. Функция %s",
+        add_task.__name__
+    )
+    await dialog_manager.start(state=GetTaskDialogSG.add_task_window,
+                               data={"task": text})
+
+
+async def input_task(
         callback: CallbackQuery,
         widget: Button,
         dialog_manager: DialogManager
 ):
     logger.debug(
-        "Запуск диалога добавления задачи. Функция %s",
-        start_add_task.__name__
+        "Переход в окно запроса задачи. Функция %s",
+        input_task.__name__
     )
-    await dialog_manager.start(state=GetTaskDialogSG.create_task_window,
-                               data={"task": "✍️ Введите задачу ниже"})
+    await dialog_manager.switch_to(state=StartSG.input_task_window)
 
 
 async def go_tasks(
@@ -232,7 +246,7 @@ start_dialog = Dialog(
         Row(
             Button(text=Const("Добавить задачу"),
                    id="add_task",
-                   on_click=start_add_task),
+                   on_click=input_task),
             Button(text=Const("Посмотреть задачи"),
                    id="tasks",
                    on_click=go_tasks),
@@ -249,6 +263,14 @@ start_dialog = Dialog(
                id="support",
                on_click=go_support),
         state=StartSG.start_window
+    ),
+    Window(
+        Const("✍️ Введите текст задачи"),
+        TextInput(
+            id="task_input",
+            on_success=add_task
+        ),
+        state=StartSG.input_task_window
     ),
 )
 
@@ -267,7 +289,7 @@ create_task_dialog = Dialog(
                    on_click=go_cancel),
         ),
         getter=get_task,
-        state=GetTaskDialogSG.create_task_window
+        state=GetTaskDialogSG.add_task_window
     ),
 )
 
@@ -275,7 +297,7 @@ create_task_dialog = Dialog(
 @router.message(F.text)
 async def get_task_handler(message: Message, dialog_manager: DialogManager):
     logger.debug("Апдейт попал в хэндлер %s", get_task_handler.__name__)
-    await dialog_manager.start(state=GetTaskDialogSG.create_task_window,
+    await dialog_manager.start(state=GetTaskDialogSG.add_task_window,
                                data={"task": message.html_text})
 
 
