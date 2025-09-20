@@ -1,13 +1,7 @@
-from aiogram import Router
+__all__ = ["routers"]
 
-from .basic import router
-from ..flows.start.dialog import start_dialog
-from ..flows.add_task.dialog import add_task_dialog
+from .commands import commands_router
 
-
-def get_routers() -> list[Router]:
-    return [
-        router,
-        start_dialog,
-        add_task_dialog,
-    ]
+routers = [
+    commands_router,
+]

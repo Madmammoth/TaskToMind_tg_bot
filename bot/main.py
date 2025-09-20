@@ -6,7 +6,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram_dialog import setup_dialogs
 
-from bot.handlers import get_routers
+from bot.flows import dialogs
+from bot.handlers import routers
 from config_data.config import Config, load_config
 
 config: Config = load_config()
@@ -27,7 +28,8 @@ async def main():
     )
     dp = Dispatcher()
     logger.info("Including routers...")
-    dp.include_routers(*get_routers())
+    dp.include_routers(*routers)
+    dp.include_routers(*dialogs)
     setup_dialogs(dp)
     logger.info("Including middlewares...")
     # dp.update.middleware(SomeMiddleware)
