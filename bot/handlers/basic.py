@@ -95,7 +95,8 @@ async def start_add_task(
         "Запуск диалога добавления задачи. Функция %s",
         start_add_task.__name__
     )
-    await dialog_manager.start(state=GetTaskDialogSG.create_task_window)
+    await dialog_manager.start(state=GetTaskDialogSG.create_task_window,
+                               data={"task": "✍️ Введите задачу ниже"})
 
 
 async def go_tasks(
@@ -221,9 +222,7 @@ async def get_lists(
 
 async def get_task(dialog_manager: DialogManager, **kwargs):
     logger.debug("Апдейт попал в геттер %s", get_task.__name__)
-    if dialog_manager.start_data:
-        return dialog_manager.start_data
-    return {"task": "✍️ Введите задачу ниже"}
+    return dialog_manager.start_data
 
 
 start_dialog = Dialog(
