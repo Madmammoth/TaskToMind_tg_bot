@@ -91,14 +91,14 @@ async def add_task(
         message: Message,
         widget: ManagedTextInput,
         dialog_manager: DialogManager,
-        text: str
+        html_text: str
 ):
     logger.debug(
         "Запуск диалога добавления задачи. Функция %s",
         add_task.__name__
     )
     await dialog_manager.start(state=GetTaskDialogSG.add_task_window,
-                               data={"task": text})
+                               data={"task": html_text})
 
 
 async def go_back_to_add_task(
@@ -114,6 +114,8 @@ async def go_cancel_yes(
         widget: Button,
         dialog_manager: DialogManager
 ):
+    await callback.message.answer("Добавление задачи было отменено")
+    await callback.message.delete()
     await dialog_manager.start(state=StartSG.start_window,
                                mode=StartMode.RESET_STACK)
 
