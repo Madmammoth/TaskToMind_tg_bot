@@ -5,7 +5,7 @@ from typing import Any
 from aiogram.types import User
 from aiogram_dialog import DialogManager
 
-from bot.handlers.commands import fake_database, template_data_for_new_user
+from database.db import fake_database, template_data_for_new_user
 
 logger = logging.getLogger(__name__)
 

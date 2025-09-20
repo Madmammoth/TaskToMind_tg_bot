@@ -8,19 +8,11 @@ from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
 from bot.flows.start.states import StartSG
+from database.db import fake_database, template_data_for_new_user
 
 logger = logging.getLogger(__name__)
 
 commands_router = Router()
-
-fake_database = {}
-template_data_for_new_user = {
-    "lists": {
-        "Работа": {},
-        "Быт": {},
-    },
-    "other": {},
-}
 
 
 @commands_router.message(CommandStart())
