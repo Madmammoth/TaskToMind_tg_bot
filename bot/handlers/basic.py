@@ -97,8 +97,9 @@ async def add_task(
         "Запуск диалога добавления задачи. Функция %s",
         add_task.__name__
     )
-    await dialog_manager.start(state=GetTaskDialogSG.add_task_window,
-                               data={"task": html_text})
+    await dialog_manager.start(
+        state=GetTaskDialogSG.add_task_window,
+        data={"message_id": message.message_id, "task": html_text})
 
 
 async def go_back_to_add_task(
@@ -114,7 +115,12 @@ async def go_cancel_yes(
         widget: Button,
         dialog_manager: DialogManager
 ):
-    await callback.message.answer("Добавление задачи было отменено")
+    message_id = dialog_manager.start_data["message_id"]
+    await callback.bot.send_message(
+        chat_id=callback.message.chat.id,
+        text="Добавление задачи было отменено",
+        reply_to_message_id=message_id,
+    )
     await callback.message.delete()
     await dialog_manager.start(state=StartSG.start_window,
                                mode=StartMode.RESET_STACK)
@@ -328,8 +334,10 @@ add_task_dialog = Dialog(
 @router.message(F.text)
 async def get_task_handler(message: Message, dialog_manager: DialogManager):
     logger.debug("Апдейт попал в хэндлер %s", get_task_handler.__name__)
-    await dialog_manager.start(state=GetTaskDialogSG.add_task_window,
-                               data={"task": message.html_text})
+    await dialog_manager.start(
+        state=GetTaskDialogSG.add_task_window,
+        data={"message_id": message.message_id, "task": message.html_text}
+    )
 
 
 @router.message()
