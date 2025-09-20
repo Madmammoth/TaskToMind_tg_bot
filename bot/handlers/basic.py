@@ -274,7 +274,7 @@ start_dialog = Dialog(
     ),
 )
 
-create_task_dialog = Dialog(
+add_task_dialog = Dialog(
     Window(
         Format("{task}"),
         Row(
