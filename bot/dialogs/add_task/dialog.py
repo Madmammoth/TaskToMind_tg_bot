@@ -21,8 +21,8 @@ add_task_dialog = Dialog(
                 on_click=go_pass
             ),
             Button(
-                text=Const("Срок завершения"),
-                id="deadline",
+                text=Const("Срочность"),
+                id="urgency",
                 on_click=go_pass
             ),
             Next(
@@ -44,6 +44,11 @@ add_task_dialog = Dialog(
             Button(
                 text=Const("Сохранить"),
                 id="save",
+                on_click=go_pass
+            ),
+            Button(
+                text=Const("Срок завершения"),
+                id="deadline",
                 on_click=go_pass
             ),
             Button(
