@@ -39,4 +39,5 @@ async def get_lists(
 
 async def get_task(dialog_manager: DialogManager, **kwargs):
     logger.debug("Апдейт попал в геттер %s", get_task.__name__)
-    return dialog_manager.start_data
+    data = {**dialog_manager.start_data, **dialog_manager.dialog_data}
+    return data
