@@ -10,6 +10,7 @@ class GetTaskDialogSG(StatesGroup):
     tasks_window = State()
     add_task_window = State()
     add_task_window_2 = State()
+    save_window = State()
     cancel_window = State()
 
 
