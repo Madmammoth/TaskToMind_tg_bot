@@ -29,13 +29,13 @@ async def cmd_start(
         user_data.update(username=username, first_name=first_name)
         fake_database[user_id] = user_data
         logger.debug(
-            "Пользователь %s (имя: %s, id: %d) добавлен в базу данных",
-            username, first_name, user_id
+            "Пользователь (id: %d, ник: %s, имя: %s) добавлен в базу данных",
+            user_id, username, first_name
         )
     else:
         logger.debug(
-            "Пользователь %s (имя: %s, id: %d) уже есть в базе данных",
-            username, first_name, user_id
+            "Пользователь (id: %d, ник: %s, имя: %s) уже есть в базе данных",
+            user_id, username, first_name
         )
     await message.answer(
         f"Приветствую, {username}!\n\nЯ — бот, который со временем "
