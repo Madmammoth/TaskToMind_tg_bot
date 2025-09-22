@@ -24,6 +24,22 @@ async def go_pass(
     )
 
 
+async def go_priority(
+        callback: CallbackQuery,
+        widget: Button,
+        dialog_manager: DialogManager
+):
+    logger.debug(
+        "Установка высокого приоритета задачи. Функция %s",
+        go_priority.__name__
+    )
+    priority = await widget.text.render_text(
+        data=dialog_manager.dialog_data, manager=dialog_manager
+    )
+    dialog_manager.dialog_data["priority"] = priority
+    await callback.answer(f"Установлен {priority.lower()} приоритет задачи")
+
+
 async def go_save_yes(
         callback: CallbackQuery,
         widget: Button,

@@ -4,7 +4,7 @@ from aiogram_dialog.widgets.text import Format, Const
 
 from bot.dialogs.states import GetTaskDialogSG
 from bot.dialogs.add_task.getters import get_task
-from bot.dialogs.add_task.handlers import go_pass, go_cancel_yes, go_save_yes
+from bot.dialogs.add_task.handlers import go_pass, go_cancel_yes, go_save_yes, go_priority
 
 add_task_dialog = Dialog(
     Window(
@@ -23,10 +23,10 @@ add_task_dialog = Dialog(
                 id="in_list",
                 on_click=go_pass
             ),
-            Button(
+            SwitchTo(
                 text=Const("Приоритет"),
                 id="priority",
-                on_click=go_pass
+                state=GetTaskDialogSG.task_priority_window
             ),
             Button(
                 text=Const("Срочность"),
@@ -101,6 +101,39 @@ add_task_dialog = Dialog(
         ),
         getter=get_task,
         state=GetTaskDialogSG.add_task_window_2
+    ),
+    Window(
+        Const("Текущий приоритет задачи:"),
+        Format("{priority}"),
+        Const("\nЗадайте приоритетность задачи.\n"),
+        Const("Описание:"),
+        Const("Высокий — влияет на достижение главных целей и долгосрочный успех."),
+        Const("Средний — полезно, но не критично для ключевых результатов."),
+        Const("Низкий — несущественно, не влияет на важные задачи и цели."),
+        Row(
+            Button(
+                text=Const("Высокий"),
+                id="high",
+                on_click=go_priority,
+            ),
+            Button(
+                text=Const("Средний"),
+                id="medium",
+                on_click=go_priority
+            ),
+            Button(
+                text=Const("Низкий"),
+                id="low",
+                on_click=go_priority
+            ),
+        ),
+        SwitchTo(
+            text=Const("Назад"),
+            id="back",
+            state=GetTaskDialogSG.add_task_window
+        ),
+        getter=get_task,
+        state=GetTaskDialogSG.task_priority_window
     ),
     Window(
         Const("Задача:\n"),
