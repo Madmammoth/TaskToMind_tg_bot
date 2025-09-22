@@ -22,7 +22,14 @@ async def add_task(
     )
     await dialog_manager.start(
         state=GetTaskDialogSG.add_task_window,
-        data={"message_id": message.message_id, "task": html_text})
+        data={
+            "message_id": message.message_id,
+            "task": message.html_text,
+            "in_list": "Входящие",
+            "priority": "Низкий",
+            "urgency": "Низкая",
+        }
+    )
 
 
 async def input_task(

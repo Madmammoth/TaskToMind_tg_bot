@@ -16,5 +16,11 @@ async def get_task_handler(message: Message, dialog_manager: DialogManager):
     logger.debug("Апдейт попал в хэндлер %s", get_task_handler.__name__)
     await dialog_manager.start(
         state=GetTaskDialogSG.add_task_window,
-        data={"message_id": message.message_id, "task": message.html_text}
+        data={
+            "message_id": message.message_id,
+            "task": message.html_text,
+            "in_list": "Входящие",
+            "priority": "Низкий",
+            "urgency": "Низкая",
+        }
     )
