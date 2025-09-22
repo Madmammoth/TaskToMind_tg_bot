@@ -9,17 +9,17 @@ from bot.dialogs.states import StartSG
 logger = logging.getLogger(__name__)
 
 
-async def go_tasks(
+async def go_pass(
         callback: CallbackQuery,
         widget: Button,
         dialog_manager: DialogManager
 ):
     logger.debug(
-        "Заглушка-переход в окно с задачами. Функция %s",
-        go_tasks.__name__
+        "Заглушка для перехода в другое окно. Функция %s",
+        go_pass.__name__
     )
     await callback.answer(
-        "Когда-нибудь тут будет переход к уже добавленным задачам"
+        "Когда-нибудь тут будет переход в другое окно"
     )
 
 
@@ -37,11 +37,3 @@ async def go_cancel_yes(
     await callback.message.delete()
     await dialog_manager.start(state=StartSG.start_window,
                                mode=StartMode.RESET_STACK)
-
-
-async def go_inbox(
-        callback: CallbackQuery,
-        widget: Button,
-        dialog_manager: DialogManager
-):
-    pass

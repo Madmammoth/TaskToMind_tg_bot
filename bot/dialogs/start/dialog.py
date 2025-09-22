@@ -3,7 +3,7 @@ from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Row, Button
 from aiogram_dialog.widgets.text import Const
 
-from bot.dialogs.add_task.handlers import go_tasks
+from bot.dialogs.add_task.handlers import go_pass
 from bot.dialogs.states import StartSG
 from bot.dialogs.start.handlers import add_task, input_task, go_settings, go_features, go_support
 
@@ -17,7 +17,7 @@ start_dialog = Dialog(
                    on_click=input_task),
             Button(text=Const("Посмотреть задачи"),
                    id="tasks",
-                   on_click=go_tasks),
+                   on_click=go_pass),
         ),
         Row(
             Button(text=Const("Настройки"),
