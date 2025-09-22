@@ -1,5 +1,5 @@
 from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.kbd import Row, Button, SwitchTo, Column
+from aiogram_dialog.widgets.kbd import Row, Button, SwitchTo, Column, Next, Back
 from aiogram_dialog.widgets.text import Format, Const
 
 from bot.dialogs.states import GetTaskDialogSG
@@ -25,9 +25,35 @@ add_task_dialog = Dialog(
                 id="deadline",
                 on_click=go_pass
             ),
+            Next(
+                text=Const("Дополнительные настройки"),
+                id="check_list",
+            ),
+            SwitchTo(
+                text=Const("Отмена"),
+                id="cancel",
+                state=GetTaskDialogSG.cancel_window
+            ),
+        ),
+        getter=get_task,
+        state=GetTaskDialogSG.add_task_window
+    ),
+    Window(
+        Format("{task}"),
+        Column(
+            Button(
+                text=Const("Сохранить"),
+                id="save",
+                on_click=go_pass
+            ),
             Button(
                 text=Const("Продолжительность"),
                 id="duration",
+                on_click=go_pass
+            ),
+            Button(
+                text=Const("Напомнить"),
+                id="remind",
                 on_click=go_pass
             ),
             Button(
@@ -40,19 +66,35 @@ add_task_dialog = Dialog(
                 id="check_list",
                 on_click=go_pass
             ),
+        Column(
             Button(
-                text=Const("Дополнительные настройки"),
-                id="check_list",
+                text=Const("Отложить"),
+                id="delay",
                 on_click=go_pass
             ),
-            SwitchTo(
-                text=Const("Отмена"),
-                id="cancel",
-                state=GetTaskDialogSG.cancel_window
+            Button(
+                text=Const("Повтор"),
+                id="delay",
+                on_click=go_pass
+            ),
+            Button(
+                text=Const("Изменить список"),
+                id="change_list",
+                on_click=go_pass
             ),
         ),
+            ),
+        Back(
+            text=Const("Основные настройки"),
+            id="back",
+        ),
+        SwitchTo(
+            text=Const("Отмена"),
+            id="cancel",
+            state=GetTaskDialogSG.cancel_window
+        ),
         getter=get_task,
-        state=GetTaskDialogSG.add_task_window
+        state=GetTaskDialogSG.add_task_window_2
     ),
     Window(
         Const("Вы уверены, что хотите отменить добавление задачи?"),
