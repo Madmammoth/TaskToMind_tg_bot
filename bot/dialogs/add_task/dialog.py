@@ -1,10 +1,14 @@
 from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.kbd import Row, Button, SwitchTo, Column, Next, Back
+from aiogram_dialog.widgets.kbd import (
+    Row, Button, SwitchTo, Column, Next, Back
+)
 from aiogram_dialog.widgets.text import Format, Const
 
 from bot.dialogs.states import GetTaskDialogSG
 from bot.dialogs.add_task.getters import get_task
-from bot.dialogs.add_task.handlers import go_pass, go_cancel_yes, go_save_yes, go_priority
+from bot.dialogs.add_task.handlers import (
+    go_pass, go_cancel_yes, go_save_yes, go_priority, go_urgency
+)
 
 add_task_dialog = Dialog(
     Window(
@@ -28,10 +32,10 @@ add_task_dialog = Dialog(
                 id="priority",
                 state=GetTaskDialogSG.task_priority_window
             ),
-            Button(
+            SwitchTo(
                 text=Const("Срочность"),
                 id="urgency",
-                on_click=go_pass
+                state=GetTaskDialogSG.task_urgency_window
             ),
             Next(
                 text=Const("Дополнительные настройки"),
@@ -134,6 +138,39 @@ add_task_dialog = Dialog(
         ),
         getter=get_task,
         state=GetTaskDialogSG.task_priority_window
+    ),
+    Window(
+        Const("Текущая срочность задачи:\n"),
+        Format("<b>{urgency}</b>"),
+        Const("\nЗадайте срочность задачи.\n"),
+        Const("<i>Описание:</i>"),
+        Const("<i><b>Высокая</b> — требует внимания прямо сейчас, иначе будут негативные последствия.</i>"),
+        Const("<i><b>Средняя</b> — желательно сделать в ближайшее время, но можно немного отложить.</i>"),
+        Const("<i><b>Низкая</b> — не горит, задача может подождать без проблем.</i>"),
+        Row(
+            Button(
+                text=Const("Высокая"),
+                id="high",
+                on_click=go_urgency,
+            ),
+            Button(
+                text=Const("Средняя"),
+                id="medium",
+                on_click=go_urgency
+            ),
+            Button(
+                text=Const("Низкая"),
+                id="low",
+                on_click=go_urgency
+            ),
+        ),
+        SwitchTo(
+            text=Const("Назад"),
+            id="back",
+            state=GetTaskDialogSG.add_task_window
+        ),
+        getter=get_task,
+        state=GetTaskDialogSG.task_urgency_window
     ),
     Window(
         Const("Задача:\n"),
