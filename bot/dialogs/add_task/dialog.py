@@ -89,7 +89,7 @@ add_task_dialog = Dialog(
                 ),
                 Button(
                     text=Const("Повтор"),
-                    id="delay",
+                    id="repeat",
                     on_click=go_pass
                 ),
             ),
