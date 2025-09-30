@@ -23,10 +23,10 @@ class User(TimestampMixin, Base):
         Enum(GenderEnum), default=GenderEnum.OTHER, nullable=False,
     )
     timezone_name: Mapped[str] = mapped_column(
-        String(50), nullable=False, default="UTC"
+        String(50), nullable=False, default="Europe/Moscow"
     )
     timezone_offset: Mapped[timedelta] = mapped_column(
-        Interval, nullable=False, default=timedelta(0)
+        Interval, nullable=False, default=timedelta(hours=3)
     )
     last_active: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
