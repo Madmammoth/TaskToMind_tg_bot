@@ -8,5 +8,7 @@ dependencies = [
     "aiogram-dialog>=2.4.0",
     "alembic>=1.16.5",
     "environs>=14.3.0",
+    "psycopg>=3.2.10",
+    "psycopg-binary>=3.2.10",
     "sqlalchemy>=2.0.43",
 ]
