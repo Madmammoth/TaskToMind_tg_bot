@@ -1,11 +1,16 @@
 import asyncio
+import os
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
+
+from config_data.config import Config, load_config
+from database.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -20,12 +25,18 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+if sys.platform.startswith("win") or os.name == "nt":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+db_config: Config = load_config()
+dsn = db_config.db_settings.get_dsn()
 
 
 def run_migrations_offline() -> None:
@@ -60,21 +71,19 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
+    """Run migrations in 'online' mode with async engine."""
 
-    """
-
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    # Создаем асинхронный движок напрямую из вашего DSN
+    async_engine = create_async_engine(
+        url=dsn,
+        echo=True,
         poolclass=pool.NullPool,
     )
 
-    async with connectable.connect() as connection:
+    async with async_engine.connect() as connection:
         await connection.run_sync(do_run_migrations)
 
-    await connectable.dispose()
+    await async_engine.dispose()
 
 
 def run_migrations_online() -> None:
