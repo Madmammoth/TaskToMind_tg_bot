@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from sqlalchemy import BigInteger, String, Enum, SmallInteger, DateTime
+from sqlalchemy import BigInteger, String, Enum, SmallInteger, DateTime, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
@@ -22,7 +22,12 @@ class User(TimestampMixin, Base):
     gender: Mapped[GenderEnum] = mapped_column(
         Enum(GenderEnum), default=GenderEnum.OTHER, nullable=False,
     )
-    timezone: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
+    timezone_name: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="UTC"
+    )
+    timezone_offset: Mapped[timedelta] = mapped_column(
+        Interval, nullable=False, default=timedelta(0)
+    )
     last_active: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
