@@ -73,7 +73,6 @@ def do_run_migrations(connection: Connection) -> None:
 async def run_async_migrations() -> None:
     """Run migrations in 'online' mode with async engine."""
 
-    # Создаем асинхронный движок напрямую из вашего DSN
     async_engine = create_async_engine(
         url=dsn,
         echo=True,
