@@ -1,6 +1,6 @@
 from environs import Env
 from pydantic import BaseModel, SecretStr
-from sqlalchemy import URL, create_engine
+from sqlalchemy import URL
 
 
 class BotSettings(BaseModel):
