@@ -1,7 +1,7 @@
 from sqlalchemy import UniqueConstraint, Integer, String, ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models import TimestampMixin, Base, User, Task
+from .base import Base, TimestampMixin
 
 
 class Tag(TimestampMixin, Base):
@@ -54,8 +54,8 @@ class UserTags(TimestampMixin, Base):
         primary_key=True,
     )
 
-    user: Mapped["User"] = relationship("User", back_populates="tags")
-    tag: Mapped["Tag"] = relationship("Tag", back_populates="users")
+    user = relationship("User", back_populates="tags")
+    tag = relationship("Tag", back_populates="users")
 
 
 class TaskTags(TimestampMixin, Base):
@@ -72,5 +72,5 @@ class TaskTags(TimestampMixin, Base):
         primary_key=True,
     )
 
-    task: Mapped["Task"] = relationship("Task", back_populates="tags")
-    tag: Mapped["Tag"] = relationship("Tag", back_populates="tasks")
+    task = relationship("Task", back_populates="tags")
+    tag = relationship("Tag", back_populates="tasks")

@@ -3,19 +3,13 @@ from datetime import datetime
 from sqlalchemy import BigInteger, String, Enum, SmallInteger, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models import (
-    Base,
-    TimestampMixin,
-    GenderEnum,
-    UserTaskList,
-    UserList,
-    ListAccess,
-    TaskAccess,
-    Reminder,
-    UserAchievements,
-    UserTags,
-    ActivityLog,
-)
+from .base import Base, TimestampMixin
+from .enums import GenderEnum
+from .tasklist import UserList, ListAccess
+from .task import UserTaskList, TaskAccess
+from .support import Reminder, ActivityLog
+from .tag import UserTags
+from .achievement import UserAchievements
 
 
 class User(TimestampMixin, Base):

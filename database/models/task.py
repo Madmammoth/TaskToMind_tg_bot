@@ -12,19 +12,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models import (
-    Base,
-    TimestampMixin,
-    TaskStatusEnum,
-    LevelEnum,
-    AccessRoleEnum,
-    User,
-    TaskList,
-    Reminder,
-    ActivityLog,
-    RecurrenceRule,
-    TaskTags
-)
+from .base import Base, TimestampMixin
+from .enums import TaskStatusEnum, LevelEnum, AccessRoleEnum
+from .support import Reminder, ActivityLog, RecurrenceRule
+from .tag import TaskTags
 
 
 class Task(TimestampMixin, Base):
@@ -141,13 +132,13 @@ class UserTaskList(TimestampMixin, Base):
     )
     is_owner: Mapped[bool] = mapped_column(default=True, nullable=False)
 
-    user: Mapped["User"] = relationship(
+    user = relationship(
         "User", back_populates="task_lists",
     )
-    tasklist: Mapped["TaskList"] = relationship(
+    tasklist = relationship(
         "TaskList", back_populates="user_tasks",
     )
-    task: Mapped["Task"] = relationship(
+    task = relationship(
         "Task", back_populates="user_lists",
     )
 
@@ -182,5 +173,5 @@ class TaskAccess(TimestampMixin, Base):
         onupdate=func.now()
     )
 
-    user: Mapped["User"] = relationship("User", back_populates="task_access")
-    task: Mapped["Task"] = relationship("Task", back_populates="task_access")
+    user = relationship("User", back_populates="task_access")
+    task = relationship("Task", back_populates="task_access")

@@ -3,14 +3,10 @@ from datetime import datetime
 from sqlalchemy import Integer, ForeignKey, BigInteger, Enum, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models import (
-    Base,
-    TimestampMixin,
-    AccessRoleEnum,
-    User,
-    ActivityLog,
-    UserTaskList
-)
+from .base import Base, TimestampMixin
+from .enums import AccessRoleEnum
+from .task import UserTaskList
+from .support import ActivityLog
 
 
 class TaskList(TimestampMixin, Base):
@@ -66,10 +62,10 @@ class UserList(TimestampMixin, Base):
     )
     is_owner: Mapped[bool] = mapped_column(default=True, nullable=False)
 
-    user: Mapped["User"] = relationship(
+    user = relationship(
         "User", back_populates="tasklist",
     )
-    tasklist: Mapped["TaskList"] = relationship(
+    tasklist = relationship(
         "TaskList", back_populates="user",
     )
 
@@ -104,9 +100,9 @@ class ListAccess(TimestampMixin, Base):
         onupdate=func.now()
     )
 
-    user: Mapped["User"] = relationship(
+    user = relationship(
         "User", back_populates="list_access"
     )
-    tasklist: Mapped["TaskList"] = relationship(
+    tasklist = relationship(
         "TaskList", back_populates="list_access"
     )

@@ -1,7 +1,7 @@
 from sqlalchemy import Integer, String, ForeignKey, Text, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models import Base, TimestampMixin, User
+from .base import Base, TimestampMixin
 
 
 class Achievement(Base):
@@ -48,9 +48,9 @@ class UserAchievements(TimestampMixin, Base):
         primary_key=True,
     )
 
-    user: Mapped["User"] = relationship(
+    user = relationship(
         "User", back_populates="achievements"
     )
-    achievement: Mapped["Achievement"] = relationship(
+    achievement = relationship(
         "Achievement", back_populates="users"
     )
