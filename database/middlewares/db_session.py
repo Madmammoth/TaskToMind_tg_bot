@@ -1,8 +1,11 @@
+import logging
 from typing import Callable, Awaitable, Dict, Any
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 from sqlalchemy.ext.asyncio import async_sessionmaker
+
+logger = logging.getLogger(__name__)
 
 
 class DbSessionMiddleware(BaseMiddleware):
@@ -16,6 +19,8 @@ class DbSessionMiddleware(BaseMiddleware):
             event: TelegramObject,
             data: Dict[str, Any],
     ) -> Any:
+        logger.debug("Добавление к апдейту соединения с базой данных")
         async with self.session_pool() as session:
             data["session"] = session
+            logger.debug("Соединение с базой данных добавлено")
             return await handler(event, data)

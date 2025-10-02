@@ -1,7 +1,11 @@
+import logging
+
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User
+
+logger = logging.getLogger(__name__)
 
 
 async def upsert_user(
@@ -18,6 +22,7 @@ async def upsert_user(
         :param first_name: имя пользователя
         :param last_name: фамилия пользователя
         """
+    logger.debug("Добавление/обновление данных о пользователе в БД")
     stmt = upsert(User).values(
         {
             "telegram_id": telegram_id,
