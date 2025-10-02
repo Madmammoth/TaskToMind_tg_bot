@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from sqlalchemy import Integer, ForeignKey, BigInteger, Enum, DateTime, func
+from sqlalchemy import (
+    Integer, ForeignKey, BigInteger, Enum, DateTime, func, String
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
@@ -13,6 +15,9 @@ class TaskList(TimestampMixin, Base):
     __tablename__ = "lists"
 
     list_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    list_name: Mapped[str] = mapped_column(
+        String(64), default="Мой список", nullable=False
+    )
     parent_list_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("lists.list_id", ondelete="CASCADE")

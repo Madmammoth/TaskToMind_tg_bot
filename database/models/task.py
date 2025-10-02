@@ -8,7 +8,8 @@ from sqlalchemy import (
     Text,
     Enum,
     DateTime,
-    func
+    func,
+    String,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,6 +29,9 @@ class Task(TimestampMixin, Base):
     )
 
     task_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    task_name: Mapped[str] = mapped_column(
+        String(64), default="Моя задача", nullable=False
+    )
     creator_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.telegram_id"), nullable=False
     )
