@@ -9,6 +9,7 @@ from aiogram_dialog import setup_dialogs
 from bot.dialogs import dialogs
 from bot.handlers import routers
 from config_data.config import Config, load_config
+from database.middlewares import middlewares
 
 config: Config = load_config()
 
@@ -32,7 +33,7 @@ async def main():
     dp.include_routers(*dialogs)
     setup_dialogs(dp)
     logger.info("Including middlewares...")
-    # dp.update.middleware(SomeMiddleware)
+    dp.update.middleware(*middlewares)
     try:
         await dp.start_polling(
             bot,
