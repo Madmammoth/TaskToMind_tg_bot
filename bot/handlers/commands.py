@@ -1,14 +1,13 @@
 import logging
-from copy import deepcopy
-from typing import Any
 
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import StartSG
-from database.db import fake_database, template_data_for_new_user
+from database.requests import db_upsert_user
 
 logger = logging.getLogger(__name__)
 
@@ -18,27 +17,23 @@ commands_router = Router()
 @commands_router.message(CommandStart())
 async def cmd_start(
         message: Message,
-        dialog_manager: DialogManager
+        dialog_manager: DialogManager,
+        session: AsyncSession
 ):
     logger.debug("Сообщение попало в хэндлер %s", cmd_start.__name__)
+    user_id = message.from_user.id
     username = message.from_user.username
     first_name = message.from_user.first_name
-    user_id = message.from_user.id
-    if user_id not in fake_database:
-        user_data: dict[str, Any] = deepcopy(template_data_for_new_user)
-        user_data.update(username=username, first_name=first_name)
-        fake_database[user_id] = user_data
-        logger.debug(
-            "Пользователь (id: %d, ник: %s, имя: %s) добавлен в базу данных",
-            user_id, username, first_name
-        )
-    else:
-        logger.debug(
-            "Пользователь (id: %d, ник: %s, имя: %s) уже есть в базе данных",
-            user_id, username, first_name
-        )
+    last_name = message.from_user.last_name
+    await db_upsert_user(
+        session,
+        telegram_id=user_id,
+        first_name=first_name,
+        last_name=last_name,
+        username=username,
+    )
     await message.answer(
-        f"Приветствую, {username}!\n\nЯ — бот, который со временем "
+        f"Приветствую, {first_name}!\n\nЯ — бот, который со временем "
         "станет твоим удобным и надёжным планировщиком дел, "
         "умным каталогизатором всех твоих пересланных сообщений, "
         "твоей второй памятью и даже — твоим вторым мозгом!\n\n"
