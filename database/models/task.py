@@ -177,5 +177,9 @@ class TaskAccess(TimestampMixin, Base):
         onupdate=func.now()
     )
 
-    user = relationship("User", back_populates="task_access")
-    task = relationship("Task", back_populates="task_access")
+    user = relationship(
+        "User", back_populates="task_access", foreign_keys=[user_id]
+    )
+    task = relationship(
+        "Task", back_populates="task_access", foreign_keys=[task_id]
+    )
