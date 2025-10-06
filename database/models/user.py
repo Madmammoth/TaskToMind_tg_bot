@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import BigInteger, String, Enum, SmallInteger, DateTime, Interval
+from sqlalchemy import (
+    BigInteger, String, Enum, SmallInteger, DateTime, Interval, func
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
@@ -29,13 +31,16 @@ class User(TimestampMixin, Base):
         Interval, nullable=False, default=timedelta(hours=3)
     )
     last_active: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now()
     )
     is_stopped_bot: Mapped[bool] = mapped_column(
         default=False, nullable=False
     )
     stopped_count: Mapped[int | None] = mapped_column(
-        SmallInteger, nullable=True
+        SmallInteger,  default=0, nullable=False
     )
 
     tasklist: Mapped[list["UserList"]] = relationship(
@@ -48,10 +53,16 @@ class User(TimestampMixin, Base):
         "Reminder", back_populates="user", passive_deletes=True,
     )
     list_access: Mapped[list["ListAccess"]] = relationship(
-        "ListAccess", back_populates="user", passive_deletes=True,
+        "ListAccess",
+        back_populates="user",
+        passive_deletes=True,
+        foreign_keys="ListAccess.user_id",
     )
     task_access: Mapped[list["TaskAccess"]] = relationship(
-        "TaskAccess", back_populates="user", passive_deletes=True,
+        "TaskAccess",
+        back_populates="user",
+        passive_deletes=True,
+        foreign_keys="TaskAccess.user_id",
     )
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
         "ActivityLog", back_populates="user", passive_deletes=True,
