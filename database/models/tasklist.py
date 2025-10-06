@@ -36,7 +36,10 @@ class TaskList(TimestampMixin, Base):
         cascade="all, delete-orphan",
     )
     user: Mapped[list["UserList"]] = relationship(
-        "UserList", back_populates="tasklist", passive_deletes=True
+        "UserList",
+        back_populates="tasklist",
+        passive_deletes=True,
+        foreign_keys="UserList.list_id",
     )
     user_tasks: Mapped[list["UserTaskList"]] = relationship(
         "UserTaskList", back_populates="tasklist", passive_deletes=True,
@@ -106,8 +109,8 @@ class ListAccess(TimestampMixin, Base):
     )
 
     user = relationship(
-        "User", back_populates="list_access"
+        "User", back_populates="list_access", foreign_keys=[user_id]
     )
     tasklist = relationship(
-        "TaskList", back_populates="list_access"
+        "TaskList", back_populates="list_access", foreign_keys=[list_id]
     )
