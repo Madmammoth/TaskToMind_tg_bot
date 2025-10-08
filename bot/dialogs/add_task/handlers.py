@@ -3,9 +3,12 @@ import logging
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager, StartMode
 from aiogram_dialog.widgets.kbd import Button
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import StartSG
-from database.db import fake_database
+from database.models import LevelEnum
+from database.requests import db_add_task
+from locales.ru import PRIORITY_LABELS, URGENCY_LABELS
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +36,25 @@ async def go_priority(
         "Установка приоритета задачи. Функция %s",
         go_priority.__name__
     )
-    priority = await widget.text.render_text(
+
+    priority_id = widget.widget_id
+
+    try:
+        priority_enum = LevelEnum(priority_id)
+    except ValueError:
+        await callback.answer("Неизвестный уровень приоритета.")
+        return
+
+    priority_text = await widget.text.render_text(
         data=dialog_manager.dialog_data, manager=dialog_manager
     )
-    dialog_manager.dialog_data["priority"] = priority
-    await callback.answer(f"Установлен {priority.lower()} приоритет задачи")
+    dialog_manager.dialog_data["priority"] = priority_enum
+    dialog_manager.dialog_data["priority_label"] = (
+        PRIORITY_LABELS.get(priority_enum)
+    )
+    await callback.answer(f"Установлен {priority_text.lower()} "
+                          "приоритет задачи")
+    logger.debug("Приоритет задачи установлен: %s", priority_enum.value)
 
 
 async def go_urgency(
@@ -49,46 +66,40 @@ async def go_urgency(
         "Установка срочности задачи. Функция %s",
         go_urgency.__name__
     )
-    urgency = await widget.text.render_text(
+    urgency_id = widget.widget_id
+
+    try:
+        urgency_enum = LevelEnum(urgency_id)
+    except ValueError:
+        await callback.answer("Неизвестный уровень срочности.")
+        return
+
+    urgency_text = await widget.text.render_text(
         data=dialog_manager.dialog_data, manager=dialog_manager
     )
-    dialog_manager.dialog_data["urgency"] = urgency
-    await callback.answer(f"Установлена {urgency.lower()} срочность задачи")
+    dialog_manager.dialog_data["urgency"] = urgency_enum
+    dialog_manager.dialog_data["urgency_label"] = (
+        URGENCY_LABELS.get(urgency_enum)
+    )
+    await callback.answer(f"Установлена {urgency_text.lower()} "
+                          "срочность задачи")
+    logger.debug("Срочность задачи установлена: %s", urgency_enum)
 
 
 async def go_save_yes(
         callback: CallbackQuery,
         widget: Button,
-        dialog_manager: DialogManager
+        dialog_manager: DialogManager,
 ):
     logger.debug(
         "Сохранение задачи. Функция %s",
         go_save_yes.__name__
     )
+    session: AsyncSession = dialog_manager.middleware_data["session"]
     user_id = callback.from_user.id
-    username = callback.from_user.username
-    first_name = callback.from_user.first_name
-    message_id = dialog_manager.start_data["message_id"]
     data = {**dialog_manager.start_data, **dialog_manager.dialog_data}
-    fake_database[user_id][username] = username
-    fake_database[user_id][first_name] = first_name
-    fake_database[user_id]["lists"][data["in_list"]][message_id] = {
-        "task": data["task"],
-        "priority": data.get("priority"),
-        "urgency": data.get("urgency"),
-        "deadline": data.get("deadline"),
-        "deadline_show": data.get("deadline_show", False),
-        "duration": data.get("duration"),
-        "duration_show": data.get("duration_show", False),
-        "remind": data.get("remind"),
-        "remind_show": data.get("remind_show", False),
-        "repeat": data.get("repeat"),
-        "repeat_show": data.get("repeat_show", False),
-        "checklist": data.get("checklist"),
-        "checklist_show": data.get("checklist_show", False),
-        "tag": data.get("tag"),
-        "tag_show": data.get("tag_show", False),
-    }
+    message_id = data["message_id"]
+    await db_add_task(session, user_id, data)
     await callback.bot.send_message(
         chat_id=callback.message.chat.id,
         text="Задача успешно добавлена!",
