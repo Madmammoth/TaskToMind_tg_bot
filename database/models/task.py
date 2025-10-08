@@ -29,14 +29,14 @@ class Task(TimestampMixin, Base):
     )
 
     task_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    task_name: Mapped[str] = mapped_column(
+    message_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(
         String(64), default="Моя задача", nullable=False
     )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     creator_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.telegram_id"), nullable=False
     )
-    message_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    text: Mapped[str] = mapped_column(Text, nullable=False)
     priority: Mapped[LevelEnum] = mapped_column(
         Enum(LevelEnum), nullable=False, default=LevelEnum.MEDIUM
     )
@@ -53,6 +53,7 @@ class Task(TimestampMixin, Base):
     parent_task_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("tasks.task_id", ondelete="CASCADE"),
+        nullable=True,
     )
     deadline: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=True
@@ -78,7 +79,7 @@ class Task(TimestampMixin, Base):
     recurrence_rule_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("recurrence_rules.rule_id", ondelete="SET NULL")
     )
-    duration: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    duration: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     remind: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     parent: Mapped["Task"] = relationship(
@@ -113,7 +114,7 @@ class Task(TimestampMixin, Base):
 
     def __repr__(self) -> str:
         return (f"<Task id={self.task_id} shared={self.is_shared} "
-                f"status={self.status.value} text={self.text[:20]!r}>")
+                f"status={self.status.value} title={self.title[:20]!r}>")
 
 
 class UserTaskList(TimestampMixin, Base):
