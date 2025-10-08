@@ -10,7 +10,7 @@ from bot.dialogs.start.handlers import add_task, input_task, go_settings, go_fea
 start_dialog = Dialog(
     Window(
         Const("Отправь мне планируемую задачу, "
-              "чтобы не забыть о ней! 🔘 ⚪ ⬜ 🔳 🔲"),
+              "чтобы не забыть о ней!"),
         Row(
             Button(text=Const("Добавить задачу"),
                    id="add_task",
