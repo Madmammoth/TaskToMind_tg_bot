@@ -1,8 +1,8 @@
 """Initializing migration
 
-Revision ID: 5070a1247a02
+Revision ID: cd6fa4ae952e
 Revises: 
-Create Date: 2025-10-06 11:02:26.847255
+Create Date: 2025-10-07 15:28:30.040623
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '5070a1247a02'
+revision: str = 'cd6fa4ae952e'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,6 +32,7 @@ def upgrade() -> None:
     sa.Column('required_count', sa.Integer(), nullable=True),
     sa.Column('previous_achievement_id', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['previous_achievement_id'], ['achievements.achievement_id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('achievement_id')
     )
     op.bulk_insert(
@@ -661,7 +662,7 @@ def upgrade() -> None:
     sa.Column('list_id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('role', sa.Enum('OWNER', 'EDITOR', 'VIEWER', name='accessroleenum'), nullable=False),
-    sa.Column('granted_by', sa.BigInteger(), nullable=False),
+    sa.Column('granted_by', sa.BigInteger(), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['granted_by'], ['users.telegram_id'], ondelete='SET NULL'),
@@ -703,10 +704,10 @@ def upgrade() -> None:
     )
     op.create_table('tasks',
     sa.Column('task_id', sa.Integer(), nullable=False),
-    sa.Column('task_name', sa.String(length=64), nullable=False),
-    sa.Column('creator_id', sa.BigInteger(), nullable=False),
     sa.Column('message_id', sa.Integer(), nullable=False),
-    sa.Column('text', sa.Text(), nullable=False),
+    sa.Column('title', sa.String(length=64), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('creator_id', sa.BigInteger(), nullable=False),
     sa.Column('priority', sa.Enum('HIGH', 'MEDIUM', 'LOW', name='levelenum'), nullable=False),
     sa.Column('urgency', sa.Enum('HIGH', 'MEDIUM', 'LOW', name='levelenum'), nullable=False),
     sa.Column('status', sa.Enum('NEW', 'IN_PROGRESS', 'DONE', 'CANCELLED', name='taskstatusenum'), nullable=False),
@@ -761,9 +762,9 @@ def upgrade() -> None:
     sa.Column('new_value', sa.Text(), nullable=True),
     sa.Column('extra', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['list_id'], ['lists.list_id'], ),
-    sa.ForeignKeyConstraint(['task_id'], ['tasks.task_id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ),
+    sa.ForeignKeyConstraint(['list_id'], ['lists.list_id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['task_id'], ['tasks.task_id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('log_id')
     )
     op.create_table('reminders',
