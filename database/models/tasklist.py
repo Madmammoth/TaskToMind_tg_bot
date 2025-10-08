@@ -99,7 +99,7 @@ class ListAccess(TimestampMixin, Base):
     granted_by: Mapped[int] = mapped_column(
         BigInteger,
         ForeignKey("users.telegram_id", ondelete="SET NULL", ),
-        nullable=False,
+        nullable=True,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
