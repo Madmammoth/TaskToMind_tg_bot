@@ -12,10 +12,11 @@ from bot.dialogs.add_task.handlers import (
 
 add_task_dialog = Dialog(
     Window(
-        Format("{task}"),
-        Format("\nСписок: {in_list}"),
-        Format("Приоритет: {priority}"),
-        Format("Срочность: {urgency}"),
+        Format("{task_title}"),
+        Format("{task_description}", when="task_description"),
+        Format("\nСписок: {list_name}"),
+        Format("Приоритет: {priority_label}"),
+        Format("Срочность: {urgency_label}"),
         Column(
             SwitchTo(
                 text=Const("Сохранить"),
@@ -24,7 +25,7 @@ add_task_dialog = Dialog(
             ),
             Button(
                 text=Const("Список"),
-                id="in_list",
+                id="list_name",
                 on_click=go_pass
             ),
             SwitchTo(
@@ -51,10 +52,11 @@ add_task_dialog = Dialog(
         state=GetTaskDialogSG.add_task_window
     ),
     Window(
-        Format("{task}"),
-        Format("\nСписок: {in_list}"),
-        Format("Приоритет: {priority}"),
-        Format("Срочность: {urgency}"),
+        Format("{task_title}"),
+        Format("{task_description}", when="task_description"),
+        Format("\nСписок: {list_name}"),
+        Format("Приоритет: {priority_label}"),
+        Format("Срочность: {urgency_label}"),
         Column(
             SwitchTo(
                 text=Const("Сохранить"),
@@ -108,7 +110,7 @@ add_task_dialog = Dialog(
     ),
     Window(
         Const("Текущий приоритет задачи:\n"),
-        Format("<b>{priority}</b>"),
+        Format("<b>{priority_label}</b>"),
         Const("\nЗадайте приоритетность задачи.\n"),
         Const("<i>Описание:</i>"),
         Const("<i><b>Высокий</b> — влияет на достижение главных целей и долгосрочный успех.</i>"),
@@ -141,7 +143,7 @@ add_task_dialog = Dialog(
     ),
     Window(
         Const("Текущая срочность задачи:\n"),
-        Format("<b>{urgency}</b>"),
+        Format("<b>{urgency_label}</b>"),
         Const("\nЗадайте срочность задачи.\n"),
         Const("<i>Описание:</i>"),
         Const("<i><b>Высокая</b> — требует внимания прямо сейчас, иначе будут негативные последствия.</i>"),
@@ -174,11 +176,12 @@ add_task_dialog = Dialog(
     ),
     Window(
         Const("Задача:\n"),
-        Format("{task}\n"),
-        Const("будет сохранена со следующими параметрами:"),
-        Format("\nСписок: {in_list}"),
-        Format("Приоритет: {priority}"),
-        Format("Срочность: {urgency}"),
+        Format("{task_title}"),
+        Format("{task_description}", when="task_description"),
+        Const("\nбудет сохранена со следующими параметрами:"),
+        Format("\nСписок: {list_name}"),
+        Format("Приоритет: {priority_label}"),
+        Format("Срочность: {urgency_label}"),
         Format("Срок завершения: {deadline}", when="deadline_show"),
         Format("Продолжительность: {duration}", when="duration_show"),
         Format("Напомнить: {remind}", when="remind_show"),
