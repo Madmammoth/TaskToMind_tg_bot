@@ -6,6 +6,7 @@ from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button
 
 from bot.dialogs.states import GetTaskDialogSG, StartSG
+from bot.handlers.task_messages import make_default_task_data
 
 logger = logging.getLogger(__name__)
 
@@ -14,21 +15,15 @@ async def add_task(
         message: Message,
         widget: ManagedTextInput,
         dialog_manager: DialogManager,
-        html_text: str
 ):
     logger.debug(
         "Запуск диалога добавления задачи. Функция %s",
         add_task.__name__
     )
+    task_data = make_default_task_data(message.message_id, message.html_text)
     await dialog_manager.start(
         state=GetTaskDialogSG.add_task_window,
-        data={
-            "message_id": message.message_id,
-            "task": message.html_text,
-            "in_list": "Входящие",
-            "priority": "Низкий",
-            "urgency": "Низкая",
-        }
+        data=task_data
     )
 
 
