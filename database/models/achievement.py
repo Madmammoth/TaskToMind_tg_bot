@@ -23,14 +23,17 @@ class Achievement(TimestampMixin, Base):
                                                  nullable=False)
     required_count: Mapped[int] = mapped_column(Integer, nullable=True)
     previous_achievement_id: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, default=None
+        Integer,
+        ForeignKey("achievements.achievement_id", ondelete="SET NULL"),
+        nullable=True,
+        default=None,
     )
 
     parent: Mapped["Achievement"] = relationship(
         "Achievement",
         remote_side=[achievement_id],
         back_populates="children",
-        uselist=False
+        uselist=False,
     )
     children: Mapped[list["Achievement"]] = relationship(
         "Achievement",
