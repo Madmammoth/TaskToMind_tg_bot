@@ -7,7 +7,7 @@ from aiogram_dialog import DialogManager, StartMode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import StartSG
-from database.requests import db_upsert_user
+from database.requests import upsert_user_with_log
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +25,9 @@ async def cmd_start(
     username = message.from_user.username
     first_name = message.from_user.first_name
     last_name = message.from_user.last_name
-    await db_upsert_user(
+    await upsert_user_with_log(
         session,
-        telegram_id=user_id,
+        user_id=user_id,
         first_name=first_name,
         last_name=last_name,
         username=username,

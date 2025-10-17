@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import StartSG
 from database.models import LevelEnum
-from database.requests import db_add_task
+from database.requests import add_task_with_stats_achievs_log
 from locales.ru import PRIORITY_LABELS, URGENCY_LABELS
 
 logger = logging.getLogger(__name__)
@@ -99,7 +99,7 @@ async def go_save_yes(
     user_id = callback.from_user.id
     data = {**dialog_manager.start_data, **dialog_manager.dialog_data}
     message_id = data["message_id"]
-    await db_add_task(session, user_id, data)
+    await add_task_with_stats_achievs_log(session, user_id, data)
     await callback.bot.send_message(
         chat_id=callback.message.chat.id,
         text="Задача успешно добавлена!",
