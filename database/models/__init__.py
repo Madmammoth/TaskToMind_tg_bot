@@ -23,7 +23,7 @@ __all__ = [
     "UserAchievements",
 ]
 
-from .base import Base, TimestampMixin
+from .base import Base
 from .enums import (
     GenderEnum,
     LevelEnum,

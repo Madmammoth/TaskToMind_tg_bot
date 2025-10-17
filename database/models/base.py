@@ -8,9 +8,19 @@ class Base(DeclarativeBase):
     pass
 
 
-class TimestampMixin:
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-    )
+def make_timestamp_mixin(include_updated: bool = True):
+    class TimestampMixin:
+        created_at: Mapped[datetime] = mapped_column(
+            DateTime(timezone=True),
+            nullable=False,
+            server_default=func.now(),
+        )
+        if include_updated:
+            updated_at: Mapped[datetime] = mapped_column(
+                DateTime(timezone=True),
+                nullable=False,
+                server_default=func.now(),
+                onupdate=func.now(),
+            )
+
+    return TimestampMixin

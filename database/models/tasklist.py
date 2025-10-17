@@ -5,13 +5,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base, TimestampMixin
+from .base import Base, make_timestamp_mixin
 from .enums import AccessRoleEnum
 from .task import UserTaskList
 from .support import ActivityLog
 
 
-class TaskList(TimestampMixin, Base):
+class TaskList(Base, make_timestamp_mixin()):
     __tablename__ = "lists"
 
     list_id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -55,7 +55,7 @@ class TaskList(TimestampMixin, Base):
         return f"<TaskList id={self.list_id} shared={self.is_shared}>"
 
 
-class UserList(TimestampMixin, Base):
+class UserList(Base, make_timestamp_mixin(include_updated=False)):
     __tablename__ = "user_lists"
 
     user_id: Mapped[int] = mapped_column(
@@ -78,7 +78,7 @@ class UserList(TimestampMixin, Base):
     )
 
 
-class ListAccess(TimestampMixin, Base):
+class ListAccess(Base, make_timestamp_mixin()):
     __tablename__ = "list_access"
 
     list_id: Mapped[int] = mapped_column(
@@ -100,12 +100,6 @@ class ListAccess(TimestampMixin, Base):
         BigInteger,
         ForeignKey("users.telegram_id", ondelete="SET NULL", ),
         nullable=True,
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-        onupdate=func.now()
     )
 
     user = relationship(

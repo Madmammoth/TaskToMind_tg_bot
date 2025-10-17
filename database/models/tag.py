@@ -1,10 +1,10 @@
 from sqlalchemy import UniqueConstraint, Integer, String, ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base, TimestampMixin
+from .base import Base, make_timestamp_mixin
 
 
-class Tag(TimestampMixin, Base):
+class Tag(Base, make_timestamp_mixin()):
     __tablename__ = "tags"
     __table_args__ = (
         UniqueConstraint(
@@ -40,7 +40,7 @@ class Tag(TimestampMixin, Base):
     tasks: Mapped[list["TaskTags"]] = relationship("TaskTags", back_populates="tag")
 
 
-class UserTags(TimestampMixin, Base):
+class UserTags(Base, make_timestamp_mixin(include_updated=False)):
     __tablename__ = "user_tags"
 
     user_id: Mapped[int] = mapped_column(
@@ -58,7 +58,7 @@ class UserTags(TimestampMixin, Base):
     tag = relationship("Tag", back_populates="users")
 
 
-class TaskTags(TimestampMixin, Base):
+class TaskTags(Base, make_timestamp_mixin(include_updated=False)):
     __tablename__ = "task_tags"
 
     task_id: Mapped[int] = mapped_column(
