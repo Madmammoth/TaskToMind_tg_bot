@@ -36,11 +36,11 @@ class Tag(Base, make_timestamp_mixin()):
         back_populates="parent",
         cascade="all, delete-orphan",
     )
-    users: Mapped[list["UserTags"]] = relationship("UserTags", back_populates="tag")
-    tasks: Mapped[list["TaskTags"]] = relationship("TaskTags", back_populates="tag")
+    users: Mapped[list["UserTag"]] = relationship("UserTag", back_populates="tag")
+    tasks: Mapped[list["TaskTag"]] = relationship("TaskTag", back_populates="tag")
 
 
-class UserTags(Base, make_timestamp_mixin(include_updated=False)):
+class UserTag(Base, make_timestamp_mixin(include_updated=False)):
     __tablename__ = "user_tags"
 
     user_id: Mapped[int] = mapped_column(
@@ -58,7 +58,7 @@ class UserTags(Base, make_timestamp_mixin(include_updated=False)):
     tag = relationship("Tag", back_populates="users")
 
 
-class TaskTags(Base, make_timestamp_mixin(include_updated=False)):
+class TaskTag(Base, make_timestamp_mixin(include_updated=False)):
     __tablename__ = "task_tags"
 
     task_id: Mapped[int] = mapped_column(

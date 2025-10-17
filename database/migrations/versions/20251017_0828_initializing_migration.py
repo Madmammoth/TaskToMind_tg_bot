@@ -837,7 +837,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('reminder_id')
     )
-    op.create_table('task_access',
+    op.create_table('task_accesses',
     sa.Column('task_id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('role', sa.Enum('OWNER', 'EDITOR', 'VIEWER', name='accessroleenum'), nullable=False),
@@ -885,7 +885,7 @@ def downgrade() -> None:
     op.drop_table('user_list_tasks')
     op.drop_table('user_tags')
     op.drop_table('task_tags')
-    op.drop_table('task_access')
+    op.drop_table('task_accesses')
     op.drop_table('reminders')
     op.drop_table('activity_logs')
     op.drop_table('user_stats')

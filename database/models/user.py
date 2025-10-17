@@ -12,8 +12,8 @@ from .enums import GenderEnum
 from .tasklist import UserList, ListAccess
 from .task import UserListTask, TaskAccess
 from .support import Reminder, ActivityLog
-from .tag import UserTags
-from .achievement import UserAchievements
+from .tag import UserTag
+from .achievement import UserAchievement
 
 stats_counter = Annotated[
     int, mapped_column(Integer, default=0, nullable=False)
@@ -64,7 +64,7 @@ class User(Base, make_timestamp_mixin()):
         passive_deletes=True,
         foreign_keys="ListAccess.user_id",
     )
-    task_access: Mapped[list["TaskAccess"]] = relationship(
+    task_accesses: Mapped[list["TaskAccess"]] = relationship(
         "TaskAccess",
         back_populates="user",
         passive_deletes=True,
@@ -73,11 +73,11 @@ class User(Base, make_timestamp_mixin()):
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
         "ActivityLog", back_populates="user", passive_deletes=True,
     )
-    tags: Mapped[list["UserTags"]] = relationship(
-        "UserTags", back_populates="user"
+    tags: Mapped[list["UserTag"]] = relationship(
+        "UserTag", back_populates="user"
     )
-    achievements: Mapped[list["UserAchievements"]] = relationship(
-        "UserAchievements", back_populates="user", passive_deletes=True,
+    achievements: Mapped[list["UserAchievement"]] = relationship(
+        "UserAchievement", back_populates="user", passive_deletes=True,
     )
 
     def __repr__(self) -> str:

@@ -40,12 +40,12 @@ class Achievement(Base, make_timestamp_mixin()):
         back_populates="parent",
         cascade="all, delete-orphan"
     )
-    users: Mapped[list["UserAchievements"]] = relationship(
-        "UserAchievements", back_populates="achievement"
+    users: Mapped[list["UserAchievement"]] = relationship(
+        "UserAchievement", back_populates="achievement"
     )
 
 
-class UserAchievements(Base, make_timestamp_mixin()):
+class UserAchievement(Base, make_timestamp_mixin()):
     __tablename__ = "user_achievements"
     __table_args__ = (UniqueConstraint("user_id", "achievement_id"),)
 

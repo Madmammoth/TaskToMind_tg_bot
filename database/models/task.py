@@ -16,7 +16,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, make_timestamp_mixin
 from .enums import TaskStatusEnum, LevelEnum, AccessRoleEnum
 from .support import Reminder, ActivityLog, RecurrenceRule
-from .tag import TaskTags
+from .tag import TaskTag
 
 
 class Task(Base, make_timestamp_mixin()):
@@ -47,9 +47,6 @@ class Task(Base, make_timestamp_mixin()):
         Enum(TaskStatusEnum), nullable=False, default=TaskStatusEnum.NEW
     )
     is_shared: Mapped[bool] = mapped_column(default=False, nullable=False)
-    owner_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("users.telegram_id"), nullable=False
-    )
     parent_task_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("tasks.task_id", ondelete="CASCADE"),
@@ -93,7 +90,7 @@ class Task(Base, make_timestamp_mixin()):
     reminders: Mapped[list["Reminder"]] = relationship(
         "Reminder", back_populates="task", passive_deletes=True
     )
-    task_access: Mapped[list["TaskAccess"]] = relationship(
+    task_accesses: Mapped[list["TaskAccess"]] = relationship(
         "TaskAccess", back_populates="task", passive_deletes=True
     )
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
@@ -102,8 +99,8 @@ class Task(Base, make_timestamp_mixin()):
     recurrence_rules: Mapped[list["RecurrenceRule"]] = relationship(
         "RecurrenceRule", back_populates="tasks", passive_deletes=True
     )
-    tags: Mapped[list["TaskTags"]] = relationship(
-        "TaskTags", back_populates="task", passive_deletes=True
+    tags: Mapped[list["TaskTag"]] = relationship(
+        "TaskTag", back_populates="task", passive_deletes=True
     )
 
     def __repr__(self) -> str:
@@ -129,7 +126,6 @@ class UserListTask(Base, make_timestamp_mixin(include_updated=False)):
         ForeignKey("tasks.task_id", ondelete="CASCADE"),
         primary_key=True,
     )
-    is_owner: Mapped[bool] = mapped_column(default=True, nullable=False)
 
     user = relationship(
         "User", back_populates="task_lists",
@@ -143,7 +139,7 @@ class UserListTask(Base, make_timestamp_mixin(include_updated=False)):
 
 
 class TaskAccess(Base, make_timestamp_mixin()):
-    __tablename__ = "task_access"
+    __tablename__ = "task_accesses"
 
     task_id: Mapped[int] = mapped_column(
         Integer,
@@ -167,8 +163,8 @@ class TaskAccess(Base, make_timestamp_mixin()):
     )
 
     user = relationship(
-        "User", back_populates="task_access", foreign_keys=[user_id]
+        "User", back_populates="task_accesses", foreign_keys=[user_id]
     )
     task = relationship(
-        "Task", back_populates="task_access", foreign_keys=[task_id]
+        "Task", back_populates="task_accesses", foreign_keys=[task_id]
     )

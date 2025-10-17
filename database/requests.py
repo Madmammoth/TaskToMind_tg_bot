@@ -6,9 +6,9 @@ from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import (
-    User, TaskList, UserList, UserTags, ListAccess, AccessRoleEnum,
+    User, TaskList, UserList, UserTag, ListAccess, AccessRoleEnum,
     ActivityLog, Task, TaskStatusEnum, UserListTask, TaskAccess,
-    UserAchievements, Achievement, LevelEnum,
+    UserAchievement, Achievement, LevelEnum,
 )
 from database.models.user import UserStats
 
@@ -114,7 +114,7 @@ async def upsert_user(
             ])
 
             session.add_all([
-                UserTags(user_id=telegram_id, tag_id=tag_id)
+                UserTag(user_id=telegram_id, tag_id=tag_id)
                 for tag_id in range(1, 14)
             ])
 
@@ -260,7 +260,7 @@ async def update_stats_achievs_on_task_added(
         achievements = achievements_query.scalars().all()
 
         ua_query = await session.execute(
-            select(UserAchievements).where(UserAchievements.user_id == user_id)
+            select(UserAchievement).where(UserAchievement.user_id == user_id)
         )
         user_achievements_map = {
             ua.achievement_id: ua for ua in ua_query.scalars().all()
@@ -313,7 +313,7 @@ async def update_stats_achievs_on_task_added(
 
         if ua_upserts:
             logger.debug("Связи юзер-ачивка получены")
-            stmt_bulk = upsert(UserAchievements).values(ua_upserts)
+            stmt_bulk = upsert(UserAchievement).values(ua_upserts)
             stmt_bulk = stmt_bulk.on_conflict_do_update(
                 index_elements=["user_id", "achievement_id"],
                 set_={

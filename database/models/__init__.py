@@ -17,10 +17,10 @@ __all__ = [
     "UserListTask",
     "TaskAccess",
     "Tag",
-    "UserTags",
-    "TaskTags",
+    "UserTag",
+    "TaskTag",
     "Achievement",
-    "UserAchievements",
+    "UserAchievement",
 ]
 
 from .base import Base
@@ -35,5 +35,5 @@ from .support import Reminder, ActivityLog, RecurrenceRule
 from .user import User
 from .tasklist import TaskList, UserList, ListAccess
 from .task import Task, UserListTask, TaskAccess
-from .tag import Tag, UserTags, TaskTags
-from .achievement import Achievement, UserAchievements
+from .tag import Tag, UserTag, TaskTag
+from .achievement import Achievement, UserAchievement
