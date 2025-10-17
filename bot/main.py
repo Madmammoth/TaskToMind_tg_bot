@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from bot.dialogs import dialogs
 from bot.handlers import routers
+from bot.middlewares.last_active import LastActiveMiddleware
 from config_data.config import Config, load_config
 from database.middlewares import DbSessionMiddleware
 from database.models.enums import EnumEncoder, enum_decoder
@@ -45,14 +46,15 @@ async def main():
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     key_builder = DefaultKeyBuilder(with_destiny=True)
+    redis_client = Redis(
+        host=config.redis_settings.host,
+        port=config.redis_settings.port,
+        db=config.redis_settings.db,
+        password=config.redis_settings.password.get_secret_value(),
+        username=config.redis_settings.username,
+    )
     storage = RedisStorage(
-        redis=Redis(
-            host=config.redis_settings.host,
-            port=config.redis_settings.port,
-            db=config.redis_settings.db,
-            password=config.redis_settings.password.get_secret_value(),
-            username=config.redis_settings.username,
-        ),
+        redis=redis_client,
         key_builder=key_builder,
         json_dumps=lambda data: json.dumps(data, cls=EnumEncoder),
         json_loads=lambda data: json.loads(data, object_hook=enum_decoder),
@@ -65,6 +67,7 @@ async def main():
     logger.info("Including middlewares...")
     Sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
     dp.update.middleware(DbSessionMiddleware(Sessionmaker))
+    dp.update.middleware(LastActiveMiddleware(Sessionmaker, redis_client))
     try:
         await dp.start_polling(
             bot,
