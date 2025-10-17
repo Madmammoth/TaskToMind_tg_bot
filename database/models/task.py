@@ -87,8 +87,8 @@ class Task(Base, make_timestamp_mixin()):
         back_populates="parent",
         cascade="all, delete-orphan"
     )
-    user_lists: Mapped[list["UserTaskList"]] = relationship(
-        "UserTaskList", back_populates="task", passive_deletes=True
+    user_lists: Mapped[list["UserListTask"]] = relationship(
+        "UserListTask", back_populates="task", passive_deletes=True
     )
     reminders: Mapped[list["Reminder"]] = relationship(
         "Reminder", back_populates="task", passive_deletes=True
@@ -111,8 +111,8 @@ class Task(Base, make_timestamp_mixin()):
                 f"status={self.status.value} title={self.title[:20]!r}>")
 
 
-class UserTaskList(Base, make_timestamp_mixin(include_updated=False)):
-    __tablename__ = "user_task_lists"
+class UserListTask(Base, make_timestamp_mixin(include_updated=False)):
+    __tablename__ = "user_list_tasks"
 
     user_id: Mapped[int] = mapped_column(
         BigInteger,

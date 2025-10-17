@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, make_timestamp_mixin
 from .enums import GenderEnum
 from .tasklist import UserList, ListAccess
-from .task import UserTaskList, TaskAccess
+from .task import UserListTask, TaskAccess
 from .support import Reminder, ActivityLog
 from .tag import UserTags
 from .achievement import UserAchievements
@@ -52,8 +52,8 @@ class User(Base, make_timestamp_mixin()):
     tasklist: Mapped[list["UserList"]] = relationship(
         "UserList", back_populates="user", passive_deletes=True
     )
-    task_lists: Mapped[list["UserTaskList"]] = relationship(
-        "UserTaskList", back_populates="user", passive_deletes=True
+    task_lists: Mapped[list["UserListTask"]] = relationship(
+        "UserListTask", back_populates="user", passive_deletes=True
     )
     reminders: Mapped[list["Reminder"]] = relationship(
         "Reminder", back_populates="user", passive_deletes=True,

@@ -14,7 +14,7 @@ __all__ = [
     "UserList",
     "ListAccess",
     "Task",
-    "UserTaskList",
+    "UserListTask",
     "TaskAccess",
     "Tag",
     "UserTags",
@@ -34,6 +34,6 @@ from .enums import (
 from .support import Reminder, ActivityLog, RecurrenceRule
 from .user import User
 from .tasklist import TaskList, UserList, ListAccess
-from .task import Task, UserTaskList, TaskAccess
+from .task import Task, UserListTask, TaskAccess
 from .tag import Tag, UserTags, TaskTags
 from .achievement import Achievement, UserAchievements

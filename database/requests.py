@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import (
     User, TaskList, UserList, UserTags, ListAccess, AccessRoleEnum,
-    ActivityLog, Task, TaskStatusEnum, UserTaskList, TaskAccess,
+    ActivityLog, Task, TaskStatusEnum, UserListTask, TaskAccess,
     UserAchievements, Achievement, LevelEnum,
 )
 from database.models.user import UserStats
@@ -391,7 +391,7 @@ async def db_add_task(
         await session.flush()
 
         session.add(
-            UserTaskList(
+            UserListTask(
                 user_id=telegram_id,
                 list_id=task_list.list_id,
                 task_id=task.task_id,

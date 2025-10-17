@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, make_timestamp_mixin
 from .enums import AccessRoleEnum
-from .task import UserTaskList
+from .task import UserListTask
 from .support import ActivityLog
 
 
@@ -41,8 +41,8 @@ class TaskList(Base, make_timestamp_mixin()):
         passive_deletes=True,
         foreign_keys="UserList.list_id",
     )
-    user_tasks: Mapped[list["UserTaskList"]] = relationship(
-        "UserTaskList", back_populates="tasklist", passive_deletes=True,
+    user_tasks: Mapped[list["UserListTask"]] = relationship(
+        "UserListTask", back_populates="tasklist", passive_deletes=True,
     )
     list_access: Mapped[list["ListAccess"]] = relationship(
         "ListAccess", back_populates="tasklist", passive_deletes=True,
