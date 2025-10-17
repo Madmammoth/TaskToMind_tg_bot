@@ -6,11 +6,11 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base, TimestampMixin
+from .base import Base, make_timestamp_mixin
 from .enums import ReminderStatusEnum
 
 
-class Reminder(TimestampMixin, Base):
+class Reminder(Base, make_timestamp_mixin()):
     __tablename__ = "reminders"
 
     reminder_id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -34,12 +34,6 @@ class Reminder(TimestampMixin, Base):
         default=ReminderStatusEnum.PENDING,
         nullable=False,
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-        onupdate=func.now()
-    )
 
     user = relationship("User", back_populates="reminders")
     task = relationship("Task", back_populates="reminders")
@@ -48,7 +42,7 @@ class Reminder(TimestampMixin, Base):
     )
 
 
-class ActivityLog(TimestampMixin, Base):
+class ActivityLog(Base, make_timestamp_mixin(include_updated=False)):
     __tablename__ = "activity_logs"
 
     log_id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -71,6 +65,7 @@ class ActivityLog(TimestampMixin, Base):
     old_value: Mapped[str | None] = mapped_column(Text, nullable=True)
     new_value: Mapped[str | None] = mapped_column(Text, nullable=True)
     extra: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    success: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     user = relationship(
         "User", back_populates="activity_logs"
@@ -83,7 +78,7 @@ class ActivityLog(TimestampMixin, Base):
     )
 
 
-class RecurrenceRule(TimestampMixin, Base):
+class RecurrenceRule(Base, make_timestamp_mixin()):
     __tablename__ = "recurrence_rules"
 
     rule_id: Mapped[int] = mapped_column(Integer, primary_key=True)
