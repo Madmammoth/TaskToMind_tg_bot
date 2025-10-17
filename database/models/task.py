@@ -13,17 +13,17 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base, TimestampMixin
+from .base import Base, make_timestamp_mixin
 from .enums import TaskStatusEnum, LevelEnum, AccessRoleEnum
 from .support import Reminder, ActivityLog, RecurrenceRule
 from .tag import TaskTags
 
 
-class Task(TimestampMixin, Base):
+class Task(Base, make_timestamp_mixin()):
     __tablename__ = "tasks"
     __table_args__ = (
-        CheckConstraint("done_at IS NULL OR done_at >= created_at",
-                        name="chk_done_after_created"),
+        CheckConstraint("completed_at IS NULL OR completed_at >= created_at",
+                        name="chk_complete_after_created"),
         CheckConstraint("cancelled_at IS NULL OR cancelled_at >= created_at",
                         name="chk_cancelled_after_created"),
     )
@@ -58,13 +58,7 @@ class Task(TimestampMixin, Base):
     deadline: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-        onupdate=func.now()
-    )
-    done_at: Mapped[datetime] = mapped_column(
+    completed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     cancelled_at: Mapped[datetime] = mapped_column(
@@ -117,7 +111,7 @@ class Task(TimestampMixin, Base):
                 f"status={self.status.value} title={self.title[:20]!r}>")
 
 
-class UserTaskList(TimestampMixin, Base):
+class UserTaskList(Base, make_timestamp_mixin(include_updated=False)):
     __tablename__ = "user_task_lists"
 
     user_id: Mapped[int] = mapped_column(
@@ -148,7 +142,7 @@ class UserTaskList(TimestampMixin, Base):
     )
 
 
-class TaskAccess(TimestampMixin, Base):
+class TaskAccess(Base, make_timestamp_mixin()):
     __tablename__ = "task_access"
 
     task_id: Mapped[int] = mapped_column(
@@ -170,12 +164,6 @@ class TaskAccess(TimestampMixin, Base):
         BigInteger,
         ForeignKey("users.telegram_id", ondelete="SET NULL", ),
         nullable=False,
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-        onupdate=func.now()
     )
 
     user = relationship(
