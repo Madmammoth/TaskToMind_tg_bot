@@ -1,14 +1,14 @@
 from datetime import datetime
 
 from sqlalchemy import (
-    Integer, String, ForeignKey, Text, BigInteger, DateTime
+    Integer, String, ForeignKey, Text, BigInteger, DateTime, UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base, TimestampMixin
+from .base import Base, make_timestamp_mixin
 
 
-class Achievement(TimestampMixin, Base):
+class Achievement(Base, make_timestamp_mixin()):
     __tablename__ = "achievements"
 
     achievement_id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -45,8 +45,9 @@ class Achievement(TimestampMixin, Base):
     )
 
 
-class UserAchievements(TimestampMixin, Base):
+class UserAchievements(Base, make_timestamp_mixin()):
     __tablename__ = "user_achievements"
+    __table_args__ = (UniqueConstraint("user_id", "achievement_id"),)
 
     user_id: Mapped[int] = mapped_column(
         BigInteger,
