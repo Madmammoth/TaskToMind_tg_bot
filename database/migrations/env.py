@@ -36,7 +36,7 @@ if sys.platform.startswith("win") or os.name == "nt":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 db_config: Config = load_config()
-dsn = db_config.db_settings.get_dsn()
+dsn = db_config.pg_settings.get_dsn()
 
 
 def run_migrations_offline() -> None:

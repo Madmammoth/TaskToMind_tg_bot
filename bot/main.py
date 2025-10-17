@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 import sys
@@ -6,13 +7,17 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.base import DefaultKeyBuilder
+from aiogram.fsm.storage.redis import RedisStorage
 from aiogram_dialog import setup_dialogs
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from bot.dialogs import dialogs
 from bot.handlers import routers
 from config_data.config import Config, load_config
 from database.middlewares import DbSessionMiddleware
+from database.models.enums import EnumEncoder, enum_decoder
 
 config: Config = load_config()
 
@@ -29,7 +34,7 @@ if sys.platform.startswith("win") or os.name == "nt":
 
 async def main():
     logger.info("Starting bot...")
-    dsn = config.db_settings.get_dsn()
+    dsn = config.pg_settings.get_dsn()
     engine = create_async_engine(
         url=dsn,
         echo=True,
@@ -39,7 +44,20 @@ async def main():
         token=config.bot_settings.token.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
-    dp = Dispatcher()
+    key_builder = DefaultKeyBuilder(with_destiny=True)
+    storage = RedisStorage(
+        redis=Redis(
+            host=config.redis_settings.host,
+            port=config.redis_settings.port,
+            db=config.redis_settings.db,
+            password=config.redis_settings.password.get_secret_value(),
+            username=config.redis_settings.username,
+        ),
+        key_builder=key_builder,
+        json_dumps=lambda data: json.dumps(data, cls=EnumEncoder),
+        json_loads=lambda data: json.loads(data, object_hook=enum_decoder),
+    )
+    dp = Dispatcher(storage=storage)
     logger.info("Including routers...")
     dp.include_routers(*routers)
     dp.include_routers(*dialogs)

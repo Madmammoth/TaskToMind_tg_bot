@@ -8,7 +8,7 @@ class BotSettings(BaseModel):
     owner_id: SecretStr
 
 
-class DbSettings(BaseModel):
+class PostgresSettings(BaseModel):
     db_schema: str
     db_driver: str
     db_name: str
@@ -30,6 +30,14 @@ class DbSettings(BaseModel):
         return dsn
 
 
+class RedisSettings(BaseModel):
+    db: int
+    host: str
+    port: int
+    password: SecretStr
+    username: str
+
+
 class LogSetting(BaseModel):
     level: str
     format: str
@@ -37,7 +45,8 @@ class LogSetting(BaseModel):
 
 class Config(BaseModel):
     bot_settings: BotSettings
-    db_settings: DbSettings
+    pg_settings: PostgresSettings
+    redis_settings: RedisSettings
     log_settings: LogSetting
 
 
@@ -49,7 +58,7 @@ def load_config(path: str | None = None) -> Config:
             token=env("BOT_TOKEN"),
             owner_id=env("OWNER_ID")
         ),
-        db_settings=DbSettings(
+        pg_settings=PostgresSettings(
             db_schema=env("POSTGRES_SCHEMA"),
             db_driver=env("POSTGRES_DRIVER"),
             db_name=env("POSTGRES_DB"),
@@ -58,6 +67,13 @@ def load_config(path: str | None = None) -> Config:
             user=env("POSTGRES_USER"),
             password=env("POSTGRES_PASSWORD"),
             is_echo=env.bool("POSTGRES_IS_ECHO"),
+        ),
+        redis_settings=RedisSettings(
+            db=env.int("REDIS_DATABASE"),
+            host=env("REDIS_HOST"),
+            port=env.int("REDIS_PORT"),
+            password=env("REDIS_PASSWORD"),
+            username=env("REDIS_USERNAME"),
         ),
         log_settings=LogSetting(
             level=env("LOG_LEVEL"),
