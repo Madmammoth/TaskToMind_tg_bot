@@ -6,8 +6,8 @@ from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import (
-    User, TaskList, UserList, UserTag, ListAccess, AccessRoleEnum,
-    ActivityLog, Task, TaskStatusEnum, UserListTask, TaskAccess,
+    User, TaskList, UserTag, ListAccess, AccessRoleEnum,
+    ActivityLog, Task, TaskStatusEnum, TaskInList, TaskAccess,
     UserAchievement, Achievement, LevelEnum,
 )
 from database.models.user import UserStats
@@ -90,19 +90,11 @@ async def upsert_user(
 
         if not old_user:
             default_lists = [
-                TaskList(list_name=name)
+                TaskList(title=name)
                 for name in ("Входящие", "Работа", "Быт")
             ]
             session.add_all(default_lists)
             await session.flush()
-
-            session.add_all([
-                UserList(
-                    user_id=telegram_id,
-                    list_id=lst.list_id,
-                    is_owner=True
-                ) for lst in default_lists
-            ])
 
             session.add_all([
                 ListAccess(
@@ -119,6 +111,7 @@ async def upsert_user(
             ])
 
             session.add(UserStats(user_id=telegram_id))
+
             await session.commit()
             logger.info("Добавлен новый пользователь id=%d", telegram_id)
             return {"action": "new_user"}
@@ -141,8 +134,6 @@ async def upsert_user(
         raise
 
 
-# TODO заменить owner_id на связь из таблицы доступа,
-#  заменить строки на энумы
 async def mark_task_in_process(
         session: AsyncSession,
         task_id: int,
@@ -155,13 +146,24 @@ async def mark_task_in_process(
     :param user_id: ID пользователя
     :return: None
     """
+    access_exists = (
+        select(TaskAccess).where(
+            TaskAccess.task_id == task_id,
+            TaskAccess.user_id == user_id,
+            TaskAccess.role.in_([
+                AccessRoleEnum.OWNER,
+                AccessRoleEnum.EDITOR,
+            ]),
+        ).exists()
+    )
     stmt = (
         update(Task)
         .where(
             Task.task_id == task_id,
-            Task.owner_id == user_id,
-            Task.status == "NEW")
-        .values(status="IN_PROCESS")
+            Task.status == TaskStatusEnum.NEW,
+            access_exists,
+        )
+        .values(status=TaskStatusEnum.IN_PROGRESS)
     )
     await session.execute(stmt)
     await session.commit()
@@ -351,20 +353,28 @@ async def db_add_task(
         if "list_id" in task_data:
             list_query = (
                 select(TaskList)
-                .join(UserList)
+                .join(ListAccess)
                 .where(
                     TaskList.list_id == task_data["list_id"],
-                    UserList.user_id == telegram_id,
+                    ListAccess.user_id == telegram_id,
+                    ListAccess.role.in_([
+                        AccessRoleEnum.OWNER,
+                        AccessRoleEnum.EDITOR,
+                    ]),
                 )
             )
         else:
-            list_name = task_data.get("list_name", "Входящие")
+            list_title = task_data.get("list_title", "Входящие")
             list_query = (
                 select(TaskList)
-                .join(UserList)
+                .join(ListAccess)
                 .where(
-                    TaskList.list_name == list_name,
-                    UserList.user_id == telegram_id,
+                    TaskList.title == list_title,
+                    ListAccess.user_id == telegram_id,
+                    ListAccess.role.in_([
+                        AccessRoleEnum.OWNER,
+                        AccessRoleEnum.EDITOR,
+                    ]),
                 )
             )
         task_list = (await session.execute(list_query)).scalar_one_or_none()
@@ -374,12 +384,10 @@ async def db_add_task(
         task = Task(
             title=task_data["task_title"],
             description=task_data["task_description"],
-            creator_id=telegram_id,
             message_id=task_data.get("message_id"),
             priority=task_data.get("priority"),
             urgency=task_data.get("urgency"),
             status=TaskStatusEnum.NEW,
-            owner_id=telegram_id,
             parent_task_id=task_data.get("parent_task_id"),
             deadline=task_data.get("deadline"),
             is_recurring=task_data.get("is_recurring", False),
@@ -391,8 +399,7 @@ async def db_add_task(
         await session.flush()
 
         session.add(
-            UserListTask(
-                user_id=telegram_id,
+            TaskInList(
                 list_id=task_list.list_id,
                 task_id=task.task_id,
             )

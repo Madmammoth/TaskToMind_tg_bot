@@ -1,6 +1,5 @@
 __all__ = [
     "Base",
-    "TimestampMixin",
     "GenderEnum",
     "LevelEnum",
     "TaskStatusEnum",
@@ -11,10 +10,9 @@ __all__ = [
     "RecurrenceRule",
     "User",
     "TaskList",
-    "UserList",
     "ListAccess",
     "Task",
-    "UserListTask",
+    "TaskInList",
     "TaskAccess",
     "Tag",
     "UserTag",
@@ -33,7 +31,7 @@ from .enums import (
 )
 from .support import Reminder, ActivityLog, RecurrenceRule
 from .user import User
-from .tasklist import TaskList, UserList, ListAccess
-from .task import Task, UserListTask, TaskAccess
+from .task_list import TaskList, ListAccess
+from .task import Task, TaskInList, TaskAccess
 from .tag import Tag, UserTag, TaskTag
 from .achievement import Achievement, UserAchievement

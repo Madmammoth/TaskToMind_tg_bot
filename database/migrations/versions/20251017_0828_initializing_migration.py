@@ -629,7 +629,7 @@ def upgrade() -> None:
     )
     op.create_table('lists',
     sa.Column('list_id', sa.Integer(), nullable=False),
-    sa.Column('list_name', sa.String(length=64), nullable=False),
+    sa.Column('title', sa.String(length=64), nullable=False),
     sa.Column('parent_list_id', sa.Integer(), nullable=True),
     sa.Column('is_shared', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
@@ -656,13 +656,13 @@ def upgrade() -> None:
     sa.Column('timezone_name', sa.String(length=50), nullable=False),
     sa.Column('timezone_offset', sa.Interval(), nullable=False),
     sa.Column('last_active', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('is_stopped_bot', sa.Boolean(), nullable=False),
+    sa.Column('is_bot_stopped', sa.Boolean(), nullable=False),
     sa.Column('stopped_count', sa.SmallInteger(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('telegram_id')
     )
-    op.create_table('list_access',
+    op.create_table('list_accesses',
     sa.Column('list_id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('role', sa.Enum('OWNER', 'EDITOR', 'VIEWER', name='accessroleenum'), nullable=False),
@@ -676,15 +676,15 @@ def upgrade() -> None:
     )
     op.create_table('tags',
     sa.Column('tag_id', sa.Integer(), nullable=False),
-    sa.Column('tag_name', sa.String(length=64), nullable=False),
+    sa.Column('tag_title', sa.String(length=64), nullable=False),
     sa.Column('parent_tag_id', sa.Integer(), nullable=True),
-    sa.Column('creator_id', sa.BigInteger(), nullable=True),
+    sa.Column('created_by', sa.BigInteger(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['creator_id'], ['users.telegram_id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['created_by'], ['users.telegram_id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['parent_tag_id'], ['tags.tag_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('tag_id'),
-    sa.UniqueConstraint('tag_name', 'creator_id', name='uq_tag_name_creator')
+    sa.UniqueConstraint('tag_title', 'created_by', name='uq_tag_title_created')
     )
     op.bulk_insert(
         sa.table(
@@ -712,12 +712,10 @@ def upgrade() -> None:
     sa.Column('message_id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=64), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('creator_id', sa.BigInteger(), nullable=False),
     sa.Column('priority', sa.Enum('HIGH', 'MEDIUM', 'LOW', name='levelenum'), nullable=False),
     sa.Column('urgency', sa.Enum('HIGH', 'MEDIUM', 'LOW', name='levelenum'), nullable=False),
     sa.Column('status', sa.Enum('NEW', 'IN_PROGRESS', 'DONE', 'CANCELLED', name='taskstatusenum'), nullable=False),
     sa.Column('is_shared', sa.Boolean(), nullable=False),
-    sa.Column('owner_id', sa.BigInteger(), nullable=False),
     sa.Column('parent_task_id', sa.Integer(), nullable=True),
     sa.Column('deadline', sa.DateTime(timezone=True), nullable=True),
     sa.Column('completed_at', sa.DateTime(timezone=True), nullable=True),
@@ -731,8 +729,6 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.CheckConstraint('cancelled_at IS NULL OR cancelled_at >= created_at', name='chk_cancelled_after_created'),
     sa.CheckConstraint('completed_at IS NULL OR completed_at >= created_at', name='chk_complete_after_created'),
-    sa.ForeignKeyConstraint(['creator_id'], ['users.telegram_id'], ),
-    sa.ForeignKeyConstraint(['owner_id'], ['users.telegram_id'], ),
     sa.ForeignKeyConstraint(['parent_task_id'], ['tasks.task_id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['recurrence_rule_id'], ['recurrence_rules.rule_id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('task_id')
@@ -749,15 +745,6 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('user_id', 'achievement_id'),
     sa.UniqueConstraint('user_id', 'achievement_id')
-    )
-    op.create_table('user_lists',
-    sa.Column('user_id', sa.BigInteger(), nullable=False),
-    sa.Column('list_id', sa.Integer(), nullable=False),
-    sa.Column('is_owner', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['list_id'], ['lists.list_id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('user_id', 'list_id')
     )
     op.create_table('user_stats',
     sa.Column('user_id', sa.BigInteger(), nullable=False),
@@ -865,16 +852,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('user_id', 'tag_id')
     )
-    op.create_table('user_list_tasks',
-    sa.Column('user_id', sa.BigInteger(), nullable=False),
+    op.create_table('tasks_in_lists',
     sa.Column('list_id', sa.Integer(), nullable=False),
     sa.Column('task_id', sa.Integer(), nullable=False),
-    sa.Column('is_owner', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['list_id'], ['lists.list_id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['task_id'], ['tasks.task_id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('user_id', 'list_id', 'task_id')
+    sa.PrimaryKeyConstraint('list_id', 'task_id')
     )
     # ### end Alembic commands ###
 
@@ -882,18 +866,17 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_table('user_list_tasks')
+    op.drop_table('tasks_in_lists')
     op.drop_table('user_tags')
     op.drop_table('task_tags')
     op.drop_table('task_accesses')
     op.drop_table('reminders')
     op.drop_table('activity_logs')
     op.drop_table('user_stats')
-    op.drop_table('user_lists')
     op.drop_table('user_achievements')
     op.drop_table('tasks')
     op.drop_table('tags')
-    op.drop_table('list_access')
+    op.drop_table('list_accesses')
     op.drop_table('users')
     op.drop_table('recurrence_rules')
     op.drop_table('lists')

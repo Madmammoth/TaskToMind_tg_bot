@@ -1,0 +1,108 @@
+from typing import Optional
+
+from sqlalchemy import (
+    Integer, ForeignKey, BigInteger, Enum, String
+)
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from .base import Base, make_timestamp_mixin
+from .enums import AccessRoleEnum
+from .support import ActivityLog
+from .task import TaskInList
+
+
+class TaskList(Base, make_timestamp_mixin()):
+    __tablename__ = "lists"
+
+    list_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(
+        String(64), default="Мой список", nullable=False
+    )
+    parent_list_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("lists.list_id", ondelete="CASCADE")
+    )
+    is_shared: Mapped[bool] = mapped_column(default=False, nullable=False)
+
+    parent: Mapped["TaskList"] = relationship(
+        "TaskList",
+        remote_side=[list_id],
+        back_populates="children",
+        uselist=False,
+    )
+    children: Mapped[list["TaskList"]] = relationship(
+        "TaskList",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+    )
+    task_links: Mapped[list["TaskInList"]] = relationship(
+        "TaskInList",
+        back_populates="task_list",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+    list_accesses: Mapped[list["ListAccess"]] = relationship(
+        "ListAccess",
+        back_populates="task_list",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+    activity_logs: Mapped[list["ActivityLog"]] = relationship(
+        "ActivityLog",
+        back_populates="tasklist",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+
+    users = association_proxy("list_accesses", "user")
+    tasks = association_proxy("tasks_in_lists", "task")
+
+    def __repr__(self) -> str:
+        return (f"<TaskList id={self.list_id}, shared={self.is_shared}, "
+                f"title={self.title[:20]!r}>")
+
+
+class ListAccess(Base, make_timestamp_mixin()):
+    __tablename__ = "list_accesses"
+
+    list_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("lists.list_id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("users.telegram_id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    role: Mapped[AccessRoleEnum] = mapped_column(
+        Enum(AccessRoleEnum),
+        default=AccessRoleEnum.OWNER,
+        nullable=False,
+    )
+    granted_by: Mapped[Optional[int]] = mapped_column(
+        BigInteger,
+        ForeignKey("users.telegram_id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    user = relationship(
+        "User",
+        back_populates="list_accesses",
+        foreign_keys=[user_id],
+    )
+    task_list = relationship(
+        "TaskList",
+        back_populates="list_accesses",
+        foreign_keys=[list_id],
+    )
+    granted_by_user = relationship(
+        "User",
+        back_populates="granted_list_accesses",
+        foreign_keys=[granted_by],
+    )
+
+    def __repr__(self):
+        return (f"<ListAccess user_id={self.user_id}, list_id={self.list_id}, "
+                f"role={self.role.value}>")

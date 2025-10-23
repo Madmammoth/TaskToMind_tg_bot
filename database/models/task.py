@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import (
     CheckConstraint,
@@ -8,9 +9,9 @@ from sqlalchemy import (
     Text,
     Enum,
     DateTime,
-    func,
     String,
 )
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, make_timestamp_mixin
@@ -34,9 +35,6 @@ class Task(Base, make_timestamp_mixin()):
         String(64), default="Моя задача", nullable=False
     )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    creator_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("users.telegram_id"), nullable=False
-    )
     priority: Mapped[LevelEnum] = mapped_column(
         Enum(LevelEnum), nullable=False, default=LevelEnum.MEDIUM
     )
@@ -84,38 +82,48 @@ class Task(Base, make_timestamp_mixin()):
         back_populates="parent",
         cascade="all, delete-orphan"
     )
-    user_lists: Mapped[list["UserListTask"]] = relationship(
-        "UserListTask", back_populates="task", passive_deletes=True
+    list_links: Mapped[list["TaskInList"]] = relationship(
+        "TaskInList",
+        back_populates="task",
+        passive_deletes=True,
+        lazy="selectin",
     )
     reminders: Mapped[list["Reminder"]] = relationship(
         "Reminder", back_populates="task", passive_deletes=True
     )
     task_accesses: Mapped[list["TaskAccess"]] = relationship(
-        "TaskAccess", back_populates="task", passive_deletes=True
+        "TaskAccess",
+        back_populates="task",
+        passive_deletes=True,
+        lazy="selectin",
     )
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
-        "ActivityLog", back_populates="task", passive_deletes=True
+        "ActivityLog",
+        back_populates="task",
+        passive_deletes=True,
+        lazy="selectin",
     )
     recurrence_rules: Mapped[list["RecurrenceRule"]] = relationship(
         "RecurrenceRule", back_populates="tasks", passive_deletes=True
     )
-    tags: Mapped[list["TaskTag"]] = relationship(
-        "TaskTag", back_populates="task", passive_deletes=True
+    tag_links: Mapped[list["TaskTag"]] = relationship(
+        "TaskTag",
+        back_populates="task",
+        passive_deletes=True,
+        lazy="selectin",
     )
+
+    users = association_proxy("task_accesses", "user")
+    lists = association_proxy("tasks_in_lists", "task_list")
 
     def __repr__(self) -> str:
-        return (f"<Task id={self.task_id} shared={self.is_shared} "
-                f"status={self.status.value} title={self.title[:20]!r}>")
+        return (f"<Task id={self.task_id}, shared={self.is_shared}, "
+                f"status={self.status.value}, title={self.title[:20]!r}>")
 
 
-class UserListTask(Base, make_timestamp_mixin(include_updated=False)):
-    __tablename__ = "user_list_tasks"
+class TaskInList(Base, make_timestamp_mixin(include_updated=False)):
+    __tablename__ = "tasks_in_lists"
 
-    user_id: Mapped[int] = mapped_column(
-        BigInteger,
-        ForeignKey("users.telegram_id", ondelete="CASCADE"),
-        primary_key=True,
-    )
     list_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("lists.list_id", ondelete="CASCADE"),
@@ -127,14 +135,11 @@ class UserListTask(Base, make_timestamp_mixin(include_updated=False)):
         primary_key=True,
     )
 
-    user = relationship(
-        "User", back_populates="task_lists",
-    )
-    tasklist = relationship(
-        "TaskList", back_populates="user_tasks",
+    task_list = relationship(
+        "TaskList", back_populates="task_links",
     )
     task = relationship(
-        "Task", back_populates="user_lists",
+        "Task", back_populates="list_links",
     )
 
 
@@ -156,15 +161,28 @@ class TaskAccess(Base, make_timestamp_mixin()):
         default=AccessRoleEnum.OWNER,
         nullable=False,
     )
-    granted_by: Mapped[int] = mapped_column(
+    granted_by: Mapped[Optional[int]] = mapped_column(
         BigInteger,
-        ForeignKey("users.telegram_id", ondelete="SET NULL", ),
+        ForeignKey("users.telegram_id", ondelete="SET NULL"),
         nullable=False,
     )
 
     user = relationship(
-        "User", back_populates="task_accesses", foreign_keys=[user_id]
+        "User",
+        back_populates="task_accesses",
+        foreign_keys=[user_id],
     )
     task = relationship(
-        "Task", back_populates="task_accesses", foreign_keys=[task_id]
+        "Task",
+        back_populates="task_accesses",
+        foreign_keys=[task_id],
     )
+    granted_by_user = relationship(
+        "User",
+        back_populates="granted_task_accesses",
+        foreign_keys=[granted_by],
+    )
+
+    def __repr__(self):
+        return (f"<TaskAccess user_id={self.user_id}, task_id={self.list_id}, "
+                f"role={self.role.value}>")

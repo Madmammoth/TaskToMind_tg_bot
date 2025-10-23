@@ -3,17 +3,18 @@ from typing import Annotated
 
 from sqlalchemy import (
     BigInteger, String, Enum, SmallInteger, DateTime, Interval, func,
-    ForeignKey, Integer
+    ForeignKey, Integer, and_
 )
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base, make_timestamp_mixin
-from .enums import GenderEnum
-from .tasklist import UserList, ListAccess
-from .task import UserListTask, TaskAccess
-from .support import Reminder, ActivityLog
-from .tag import UserTag
 from .achievement import UserAchievement
+from .base import Base, make_timestamp_mixin
+from .enums import AccessRoleEnum, GenderEnum
+from .support import Reminder, ActivityLog
+from .tag import Tag, UserTag
+from .task import Task, TaskAccess
+from .task_list import TaskList, ListAccess
 
 stats_counter = Annotated[
     int, mapped_column(Integer, default=0, nullable=False)
@@ -42,46 +43,156 @@ class User(Base, make_timestamp_mixin()):
         server_default=func.now(),
         onupdate=func.now()
     )
-    is_stopped_bot: Mapped[bool] = mapped_column(
+    is_bot_stopped: Mapped[bool] = mapped_column(
         default=False, nullable=False
     )
     stopped_count: Mapped[int | None] = mapped_column(
         SmallInteger, default=0, nullable=False
     )
 
-    tasklist: Mapped[list["UserList"]] = relationship(
-        "UserList", back_populates="user", passive_deletes=True
-    )
-    task_lists: Mapped[list["UserListTask"]] = relationship(
-        "UserListTask", back_populates="user", passive_deletes=True
-    )
     reminders: Mapped[list["Reminder"]] = relationship(
         "Reminder", back_populates="user", passive_deletes=True,
     )
-    list_access: Mapped[list["ListAccess"]] = relationship(
+    list_accesses: Mapped[list["ListAccess"]] = relationship(
         "ListAccess",
         back_populates="user",
-        passive_deletes=True,
         foreign_keys="ListAccess.user_id",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+    granted_list_accesses: Mapped[list["ListAccess"]] = relationship(
+        "ListAccess",
+        back_populates="granted_by_user",
+        foreign_keys="ListAccess.granted_by",
+        passive_deletes=True,
+        lazy="selectin",
     )
     task_accesses: Mapped[list["TaskAccess"]] = relationship(
         "TaskAccess",
         back_populates="user",
-        passive_deletes=True,
         foreign_keys="TaskAccess.user_id",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+    granted_task_accesses: Mapped[list["TaskAccess"]] = relationship(
+        "TaskAccess",
+        back_populates="granted_by_user",
+        foreign_keys="TaskAccess.granted_by",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+    owner_list_accesses: Mapped[list[ListAccess]] = relationship(
+        "ListAccess",
+        primaryjoin=and_(
+            ListAccess.user_id == telegram_id,
+            ListAccess.role == AccessRoleEnum.OWNER
+        ),
+        lazy="selectin",
+        viewonly=True,
+    )
+    editor_list_accesses: Mapped[list[ListAccess]] = relationship(
+        "ListAccess",
+        primaryjoin=and_(
+            ListAccess.user_id == telegram_id,
+            ListAccess.role == AccessRoleEnum.EDITOR
+        ),
+        lazy="selectin",
+        viewonly=True,
+    )
+    viewer_list_accesses: Mapped[list[ListAccess]] = relationship(
+        "ListAccess",
+        primaryjoin=and_(
+            ListAccess.user_id == telegram_id,
+            ListAccess.role == AccessRoleEnum.VIEWER
+        ),
+        lazy="selectin",
+        viewonly=True,
+    )
+    owner_task_accesses: Mapped[list[TaskAccess]] = relationship(
+        "TaskAccess",
+        primaryjoin=and_(
+            TaskAccess.user_id == telegram_id,
+            TaskAccess.role == AccessRoleEnum.OWNER
+        ),
+        lazy="selectin",
+        viewonly=True,
+    )
+    editor_task_accesses: Mapped[list[TaskAccess]] = relationship(
+        "TaskAccess",
+        primaryjoin=and_(
+            TaskAccess.user_id == telegram_id,
+            TaskAccess.role == AccessRoleEnum.EDITOR
+        ),
+        lazy="selectin",
+        viewonly=True,
+    )
+    viewer_task_accesses: Mapped[list[TaskAccess]] = relationship(
+        "TaskAccess",
+        primaryjoin=and_(
+            TaskAccess.user_id == telegram_id,
+            TaskAccess.role == AccessRoleEnum.VIEWER
+        ),
+        lazy="selectin",
+        viewonly=True,
     )
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
-        "ActivityLog", back_populates="user", passive_deletes=True,
+        "ActivityLog",
+        back_populates="user",
+        passive_deletes=True,
+        lazy="selectin",
     )
-    tags: Mapped[list["UserTag"]] = relationship(
-        "UserTag", back_populates="user"
+    tag_links: Mapped[list["UserTag"]] = relationship(
+        "UserTag",
+        back_populates="user",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+    created_tags: Mapped[list["Tag"]] = relationship(
+        "Tag",
+        back_populates="created_by_user",
+        passive_deletes=True,
+        lazy="selectin",
     )
     achievements: Mapped[list["UserAchievement"]] = relationship(
         "UserAchievement", back_populates="user", passive_deletes=True,
     )
 
+    lists: Mapped[list["TaskList"]] = association_proxy(
+        "list_accesses", "task_list",
+        creator=lambda task_list: TaskAccess(  # type: ignore
+            task_list=task_list, role=AccessRoleEnum.OWNER
+        )
+    )
+    editor_lists: Mapped[list["TaskList"]] = association_proxy(
+        "list_accesses", "task_list",
+        creator=lambda task_list: TaskAccess(  # type: ignore
+            task_list=task_list, role=AccessRoleEnum.EDITOR
+        )
+    )
+    viewer_lists: Mapped[list["TaskList"]] = association_proxy(
+        "list_accesses", "task_list",
+        creator=lambda task_list: TaskAccess(  # type: ignore
+            task_list=task_list, role=AccessRoleEnum.VIEWER
+        )
+    )
+    tasks: Mapped[list["Task"]] = association_proxy(
+        "task_accesses", "task",
+        creator=lambda task: TaskAccess(task=task,  # type: ignore
+                                        role=AccessRoleEnum.OWNER)
+    )
+    editor_tasks: Mapped[list["Task"]] = association_proxy(
+        "task_accesses", "task",
+        creator=lambda task: TaskAccess(task=task,  # type: ignore
+                                        role=AccessRoleEnum.EDITOR)
+    )
+    viewer_tasks: Mapped[list["Task"]] = association_proxy(
+        "task_accesses", "task",
+        creator=lambda task: TaskAccess(task=task,  # type: ignore
+                                        role=AccessRoleEnum.VIEWER)
+    )
+
     def __repr__(self) -> str:
-        return f"<User id={self.telegram_id} username={self.username!r}>"
+        return f"<User id={self.telegram_id}, username={self.username!r}>"
 
 
 class UserStats(Base, make_timestamp_mixin()):

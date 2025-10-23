@@ -1,4 +1,6 @@
-from sqlalchemy import UniqueConstraint, Integer, String, ForeignKey, BigInteger
+from sqlalchemy import (
+    UniqueConstraint, Integer, String, ForeignKey, BigInteger
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, make_timestamp_mixin
@@ -8,18 +10,18 @@ class Tag(Base, make_timestamp_mixin()):
     __tablename__ = "tags"
     __table_args__ = (
         UniqueConstraint(
-            "tag_name", "creator_id", name="uq_tag_name_creator"
+            "tag_title", "created_by", name="uq_tag_title_created"
         ),
     )
 
     tag_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    tag_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    tag_title: Mapped[str] = mapped_column(String(64), nullable=False)
     parent_tag_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("tags.tag_id", ondelete="CASCADE"),
         nullable=True,
     )
-    creator_id: Mapped[int | None] = mapped_column(
+    created_by: Mapped[int | None] = mapped_column(
         BigInteger,
         ForeignKey("users.telegram_id", ondelete="SET NULL"),
         nullable=True,
@@ -36,8 +38,24 @@ class Tag(Base, make_timestamp_mixin()):
         back_populates="parent",
         cascade="all, delete-orphan",
     )
-    users: Mapped[list["UserTag"]] = relationship("UserTag", back_populates="tag")
-    tasks: Mapped[list["TaskTag"]] = relationship("TaskTag", back_populates="tag")
+    user_links = relationship(
+        "UserTag",
+        back_populates="tag",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+    task_links = relationship(
+        "TaskTag",
+        back_populates="tag",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+    created_by_user = relationship(
+        "User",
+        back_populates="created_tags",
+        passive_deletes=True,
+        lazy="joined",
+    )
 
 
 class UserTag(Base, make_timestamp_mixin(include_updated=False)):
@@ -54,8 +72,8 @@ class UserTag(Base, make_timestamp_mixin(include_updated=False)):
         primary_key=True,
     )
 
-    user = relationship("User", back_populates="tags")
-    tag = relationship("Tag", back_populates="users")
+    user = relationship("User", back_populates="tag_links")
+    tag = relationship("Tag", back_populates="user_links")
 
 
 class TaskTag(Base, make_timestamp_mixin(include_updated=False)):
@@ -72,5 +90,5 @@ class TaskTag(Base, make_timestamp_mixin(include_updated=False)):
         primary_key=True,
     )
 
-    task = relationship("Task", back_populates="tags")
-    tag = relationship("Tag", back_populates="tasks")
+    task = relationship("Task", back_populates="tag_links")
+    tag = relationship("Tag", back_populates="task_links")
