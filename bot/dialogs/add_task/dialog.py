@@ -14,7 +14,7 @@ add_task_dialog = Dialog(
     Window(
         Format("{task_title}"),
         Format("{task_description}", when="task_description"),
-        Format("\nСписок: {list_name}"),
+        Format("\nСписок: {list_title}"),
         Format("Приоритет: {priority_label}"),
         Format("Срочность: {urgency_label}"),
         Column(
@@ -25,7 +25,7 @@ add_task_dialog = Dialog(
             ),
             Button(
                 text=Const("Список"),
-                id="list_name",
+                id="list_title",
                 on_click=go_pass
             ),
             SwitchTo(
@@ -54,7 +54,7 @@ add_task_dialog = Dialog(
     Window(
         Format("{task_title}"),
         Format("{task_description}", when="task_description"),
-        Format("\nСписок: {list_name}"),
+        Format("\nСписок: {list_title}"),
         Format("Приоритет: {priority_label}"),
         Format("Срочность: {urgency_label}"),
         Column(
@@ -179,7 +179,7 @@ add_task_dialog = Dialog(
         Format("{task_title}"),
         Format("{task_description}", when="task_description"),
         Const("\nбудет сохранена со следующими параметрами:"),
-        Format("\nСписок: {list_name}"),
+        Format("\nСписок: {list_title}"),
         Format("Приоритет: {priority_label}"),
         Format("Срочность: {urgency_label}"),
         Format("Срок завершения: {deadline}", when="deadline_show"),
