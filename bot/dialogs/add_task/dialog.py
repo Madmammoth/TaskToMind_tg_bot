@@ -1,14 +1,15 @@
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.kbd import (
-    Row, Button, SwitchTo, Column, Next, Back
+    Row, Button, SwitchTo, Column, Next, Back, ListGroup
 )
 from aiogram_dialog.widgets.text import Format, Const
 
-from bot.dialogs.states import GetTaskDialogSG
-from bot.dialogs.add_task.getters import get_task
+from bot.dialogs.add_task.getters import get_task, get_lists
 from bot.dialogs.add_task.handlers import (
-    go_pass, go_cancel_yes, go_save_yes, go_priority, go_urgency
+    go_pass, go_cancel_yes, go_save_yes, go_priority, go_urgency,
+    add_task_dialog_start, go_selected_list
 )
+from bot.dialogs.states import GetTaskDialogSG
 
 add_task_dialog = Dialog(
     Window(
@@ -21,12 +22,12 @@ add_task_dialog = Dialog(
             SwitchTo(
                 text=Const("Сохранить"),
                 id="save",
-                state=GetTaskDialogSG.save_window
+                state=GetTaskDialogSG.save_task_window
             ),
-            Button(
+            SwitchTo(
                 text=Const("Список"),
                 id="list_title",
-                on_click=go_pass
+                state=GetTaskDialogSG.select_list_window
             ),
             SwitchTo(
                 text=Const("Приоритет"),
@@ -61,7 +62,7 @@ add_task_dialog = Dialog(
             SwitchTo(
                 text=Const("Сохранить"),
                 id="save",
-                state=GetTaskDialogSG.save_window
+                state=GetTaskDialogSG.save_task_window
             ),
             Button(
                 text=Const("Срок завершения"),
@@ -109,13 +110,46 @@ add_task_dialog = Dialog(
         state=GetTaskDialogSG.add_task_window_2
     ),
     Window(
+        Const("Выбери нужный список:\n"),
+        ListGroup(
+            Button(
+                Format("{item[list_title]}"),
+                id="selected_list",
+                on_click=go_selected_list,
+            ),
+            id="lists_search",
+            item_id_getter=lambda item: item["list_id"],
+            items="lists"
+        ),
+        Row(
+            Button(
+                text=Const("Новый список"),
+                id="new_list",
+                on_click=go_pass,
+            ),
+            SwitchTo(
+                text=Const("Назад"),
+                id="back",
+                state=GetTaskDialogSG.add_task_window,
+            ),
+        ),
+        getter=get_lists,
+        state=GetTaskDialogSG.select_list_window
+    ),
+    Window(
         Const("Текущий приоритет задачи:\n"),
         Format("<b>{priority_label}</b>"),
         Const("\nЗадайте приоритетность задачи.\n"),
         Const("<i>Описание:</i>"),
-        Const("<i><b>Высокий</b> — влияет на достижение главных целей и долгосрочный успех.</i>"),
-        Const("<i><b>Средний</b> — полезно, но не критично для ключевых результатов.</i>"),
-        Const("<i><b>Низкий</b> — несущественно, не влияет на важные задачи и цели.</i>"),
+        Const(
+            "<i><b>Высокий</b> — влияет на достижение главных целей </i>"
+            "<i>и долгосрочный успех.</i>"),
+        Const(
+            "<i><b>Средний</b> — полезно, но не критично </i>"
+            "<i>для ключевых результатов.</i>"),
+        Const(
+            "<i><b>Низкий</b> — несущественно, не влияет </i>"
+            "<i>на важные задачи и цели.</i>"),
         Row(
             Button(
                 text=Const("Высокий"),
@@ -146,9 +180,15 @@ add_task_dialog = Dialog(
         Format("<b>{urgency_label}</b>"),
         Const("\nЗадайте срочность задачи.\n"),
         Const("<i>Описание:</i>"),
-        Const("<i><b>Высокая</b> — требует внимания прямо сейчас, иначе будут негативные последствия.</i>"),
-        Const("<i><b>Средняя</b> — желательно сделать в ближайшее время, но можно немного отложить.</i>"),
-        Const("<i><b>Низкая</b> — не горит, задача может подождать без проблем.</i>"),
+        Const(
+            "<i><b>Высокая</b> — требует внимания прямо сейчас, </i>"
+            "<i>иначе будут негативные последствия.</i>"),
+        Const(
+            "<i><b>Средняя</b> — желательно сделать в ближайшее время, </i>"
+            "<i>но можно немного отложить.</i>"),
+        Const(
+            "<i><b>Низкая</b> — не горит, </i>"
+            "<i>задача может подождать без проблем.</i>"),
         Row(
             Button(
                 text=Const("Высокая"),
@@ -202,7 +242,7 @@ add_task_dialog = Dialog(
             ),
         ),
         getter=get_task,
-        state=GetTaskDialogSG.save_window
+        state=GetTaskDialogSG.save_task_window
     ),
     Window(
         Const("Вы уверены, что хотите отменить добавление задачи?"),
@@ -220,4 +260,5 @@ add_task_dialog = Dialog(
         ),
         state=GetTaskDialogSG.cancel_window
     ),
+    on_start=add_task_dialog_start,
 )

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select, update, func
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from database.models import (
     User, TaskList, UserTag, ListAccess, AccessRoleEnum,
@@ -467,3 +468,29 @@ async def add_task_with_stats_achievs_log(
             success=False,
             user_id=user_id,
         )
+
+
+async def get_user_lists(
+        session: AsyncSession,
+        user_id: int,
+):
+    logger.debug("Запрос списков пользователя id=%d", user_id)
+    stmt = (
+        select(User)
+        .where(User.telegram_id == user_id)
+        .options(
+            selectinload(User.list_accesses)
+            .selectinload(ListAccess.task_list)
+        )
+    )
+    result = await session.scalars(stmt)
+    user = result.first()
+
+    if not user:
+        return []
+
+    lists = user.lists
+    logger.debug(
+        "Получено списков: %d, пользователя id=%d", len(lists), user_id
+    )
+    return lists

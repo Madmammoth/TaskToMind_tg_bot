@@ -1,11 +1,13 @@
+import json
 import logging
+from typing import cast
 
 from aiogram.types import CallbackQuery
-from aiogram_dialog import DialogManager, StartMode
+from aiogram_dialog import DialogManager, StartMode, SubManager
 from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.dialogs.states import StartSG
+from bot.dialogs.states import StartSG, GetTaskDialogSG
 from database.models import LevelEnum
 from database.requests import add_task_with_stats_achievs_log
 from locales.ru import PRIORITY_LABELS, URGENCY_LABELS
@@ -32,10 +34,7 @@ async def go_priority(
         widget: Button,
         dialog_manager: DialogManager
 ):
-    logger.debug(
-        "Установка приоритета задачи. Функция %s",
-        go_priority.__name__
-    )
+    logger.debug("Установка приоритета задачи...")
 
     priority_id = widget.widget_id
 
@@ -62,10 +61,7 @@ async def go_urgency(
         widget: Button,
         dialog_manager: DialogManager
 ):
-    logger.debug(
-        "Установка срочности задачи. Функция %s",
-        go_urgency.__name__
-    )
+    logger.debug("Установка срочности задачи...")
     urgency_id = widget.widget_id
 
     try:
@@ -97,9 +93,12 @@ async def go_save_yes(
     )
     session: AsyncSession = dialog_manager.middleware_data["session"]
     user_id = callback.from_user.id
-    data = {**dialog_manager.start_data, **dialog_manager.dialog_data}
-    message_id = data["message_id"]
-    await add_task_with_stats_achievs_log(session, user_id, data)
+    message_id = dialog_manager.dialog_data["message_id"]
+    await add_task_with_stats_achievs_log(
+        session=session,
+        user_id=user_id,
+        task_data=dialog_manager.dialog_data,
+    )
     await callback.bot.send_message(
         chat_id=callback.message.chat.id,
         text="Задача успешно добавлена!",
@@ -108,6 +107,18 @@ async def go_save_yes(
     await callback.message.delete()
     await dialog_manager.start(state=StartSG.start_window,
                                mode=StartMode.RESET_STACK)
+
+
+async def add_task_dialog_start(start_data, dialog_manager: DialogManager):
+    logger.debug("Объединение стартового и основного словарей диалога")
+    logger.debug("Исходные словари:")
+    logger.debug("start_data: %s", start_data)
+    logger.debug("dialog_manager.dialog_data: %s", dialog_manager.dialog_data)
+
+    dialog_manager.dialog_data.update(start_data)
+
+    logger.debug("Полученный словарь:")
+    logger.debug("dialog_manager.dialog_data: %s", dialog_manager.dialog_data)
 
 
 async def go_cancel_yes(
@@ -128,3 +139,30 @@ async def go_cancel_yes(
     await callback.message.delete()
     await dialog_manager.start(state=StartSG.start_window,
                                mode=StartMode.RESET_STACK)
+
+
+async def go_selected_list(
+        callback: CallbackQuery,
+        widget: Button,
+        dialog_manager: DialogManager,
+):
+    logger.debug("Установка списка задач...")
+    sub_manager = cast(SubManager, dialog_manager)
+    dialog_manager = sub_manager.manager
+    list_id = sub_manager.item_id
+    logger.debug("Нажата кнопка для item_id=%s", list_id)
+    lists = dialog_manager.dialog_data.get("lists", {})
+    list_title = lists.get(list_id)
+    if not list_title:
+        await callback.answer("Ошибка: список не найден.")
+        return
+    dialog_manager.dialog_data.update({
+        "list_id": int(list_id),
+        "list_title": list_title,
+    })
+    await callback.answer(f"Выбран список: {list_title}")
+    await dialog_manager.switch_to(state=GetTaskDialogSG.add_task_window)
+    logger.debug(
+        "Установлен список задач id=%s, title=%s",
+        list_id, list_title
+    )
