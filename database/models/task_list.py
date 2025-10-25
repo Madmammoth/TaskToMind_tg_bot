@@ -40,23 +40,20 @@ class TaskList(Base, make_timestamp_mixin()):
         "TaskInList",
         back_populates="task_list",
         passive_deletes=True,
-        lazy="selectin",
     )
     list_accesses: Mapped[list["ListAccess"]] = relationship(
         "ListAccess",
         back_populates="task_list",
         passive_deletes=True,
-        lazy="selectin",
     )
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
         "ActivityLog",
         back_populates="tasklist",
         passive_deletes=True,
-        lazy="selectin",
     )
 
     users = association_proxy("list_accesses", "user")
-    tasks = association_proxy("tasks_in_lists", "task")
+    tasks = association_proxy("task_links", "task")
 
     def __repr__(self) -> str:
         return (f"<TaskList id={self.list_id}, shared={self.is_shared}, "

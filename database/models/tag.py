@@ -42,19 +42,16 @@ class Tag(Base, make_timestamp_mixin()):
         "UserTag",
         back_populates="tag",
         passive_deletes=True,
-        lazy="selectin",
     )
     task_links = relationship(
         "TaskTag",
         back_populates="tag",
         passive_deletes=True,
-        lazy="selectin",
     )
     created_by_user = relationship(
         "User",
         back_populates="created_tags",
         passive_deletes=True,
-        lazy="joined",
     )
 
 

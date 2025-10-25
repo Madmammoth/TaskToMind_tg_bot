@@ -58,28 +58,24 @@ class User(Base, make_timestamp_mixin()):
         back_populates="user",
         foreign_keys="ListAccess.user_id",
         passive_deletes=True,
-        lazy="selectin",
     )
     granted_list_accesses: Mapped[list["ListAccess"]] = relationship(
         "ListAccess",
         back_populates="granted_by_user",
         foreign_keys="ListAccess.granted_by",
         passive_deletes=True,
-        lazy="selectin",
     )
     task_accesses: Mapped[list["TaskAccess"]] = relationship(
         "TaskAccess",
         back_populates="user",
         foreign_keys="TaskAccess.user_id",
         passive_deletes=True,
-        lazy="selectin",
     )
     granted_task_accesses: Mapped[list["TaskAccess"]] = relationship(
         "TaskAccess",
         back_populates="granted_by_user",
         foreign_keys="TaskAccess.granted_by",
         passive_deletes=True,
-        lazy="selectin",
     )
     owner_list_accesses: Mapped[list[ListAccess]] = relationship(
         "ListAccess",
@@ -87,7 +83,6 @@ class User(Base, make_timestamp_mixin()):
             ListAccess.user_id == telegram_id,
             ListAccess.role == AccessRoleEnum.OWNER
         ),
-        lazy="selectin",
         viewonly=True,
     )
     editor_list_accesses: Mapped[list[ListAccess]] = relationship(
@@ -96,7 +91,6 @@ class User(Base, make_timestamp_mixin()):
             ListAccess.user_id == telegram_id,
             ListAccess.role == AccessRoleEnum.EDITOR
         ),
-        lazy="selectin",
         viewonly=True,
     )
     viewer_list_accesses: Mapped[list[ListAccess]] = relationship(
@@ -105,7 +99,6 @@ class User(Base, make_timestamp_mixin()):
             ListAccess.user_id == telegram_id,
             ListAccess.role == AccessRoleEnum.VIEWER
         ),
-        lazy="selectin",
         viewonly=True,
     )
     owner_task_accesses: Mapped[list[TaskAccess]] = relationship(
@@ -114,7 +107,6 @@ class User(Base, make_timestamp_mixin()):
             TaskAccess.user_id == telegram_id,
             TaskAccess.role == AccessRoleEnum.OWNER
         ),
-        lazy="selectin",
         viewonly=True,
     )
     editor_task_accesses: Mapped[list[TaskAccess]] = relationship(
@@ -123,7 +115,6 @@ class User(Base, make_timestamp_mixin()):
             TaskAccess.user_id == telegram_id,
             TaskAccess.role == AccessRoleEnum.EDITOR
         ),
-        lazy="selectin",
         viewonly=True,
     )
     viewer_task_accesses: Mapped[list[TaskAccess]] = relationship(
@@ -132,26 +123,22 @@ class User(Base, make_timestamp_mixin()):
             TaskAccess.user_id == telegram_id,
             TaskAccess.role == AccessRoleEnum.VIEWER
         ),
-        lazy="selectin",
         viewonly=True,
     )
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
         "ActivityLog",
         back_populates="user",
         passive_deletes=True,
-        lazy="selectin",
     )
     tag_links: Mapped[list["UserTag"]] = relationship(
         "UserTag",
         back_populates="user",
         passive_deletes=True,
-        lazy="selectin",
     )
     created_tags: Mapped[list["Tag"]] = relationship(
         "Tag",
         back_populates="created_by_user",
         passive_deletes=True,
-        lazy="selectin",
     )
     achievements: Mapped[list["UserAchievement"]] = relationship(
         "UserAchievement", back_populates="user", passive_deletes=True,

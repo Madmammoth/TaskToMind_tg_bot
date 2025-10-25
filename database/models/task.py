@@ -86,7 +86,6 @@ class Task(Base, make_timestamp_mixin()):
         "TaskInList",
         back_populates="task",
         passive_deletes=True,
-        lazy="selectin",
     )
     reminders: Mapped[list["Reminder"]] = relationship(
         "Reminder", back_populates="task", passive_deletes=True
@@ -95,13 +94,11 @@ class Task(Base, make_timestamp_mixin()):
         "TaskAccess",
         back_populates="task",
         passive_deletes=True,
-        lazy="selectin",
     )
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
         "ActivityLog",
         back_populates="task",
         passive_deletes=True,
-        lazy="selectin",
     )
     recurrence_rules: Mapped[list["RecurrenceRule"]] = relationship(
         "RecurrenceRule", back_populates="tasks", passive_deletes=True
@@ -110,7 +107,6 @@ class Task(Base, make_timestamp_mixin()):
         "TaskTag",
         back_populates="task",
         passive_deletes=True,
-        lazy="selectin",
     )
 
     users = association_proxy("task_accesses", "user")
