@@ -3,7 +3,7 @@ import logging
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
-from aiogram_dialog import DialogManager, StartMode
+from aiogram_dialog import DialogManager, StartMode, ShowMode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import StartSG
@@ -39,5 +39,8 @@ async def cmd_start(
         "твоей второй памятью и даже — твоим вторым мозгом!\n\n"
         "Но пока я могу следующее:\n1. Сохранить твою задачу."
     )
-    await dialog_manager.start(state=StartSG.start_window,
-                               mode=StartMode.RESET_STACK)
+    await dialog_manager.start(
+        state=StartSG.start_window,
+        mode=StartMode.RESET_STACK,
+        show_mode=ShowMode.DELETE_AND_SEND,
+    )
