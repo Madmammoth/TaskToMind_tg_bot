@@ -1,9 +1,8 @@
-import json
 import logging
 from typing import cast
 
 from aiogram.types import CallbackQuery
-from aiogram_dialog import DialogManager, StartMode, SubManager
+from aiogram_dialog import DialogManager, StartMode, SubManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 async def go_pass(
         callback: CallbackQuery,
-        widget: Button,
-        dialog_manager: DialogManager
+        _widget: Button,
+        _dialog_manager: DialogManager
 ):
     logger.debug(
         "Заглушка для перехода в другое окно. Функция %s",
@@ -84,7 +83,7 @@ async def go_urgency(
 
 async def go_save_yes(
         callback: CallbackQuery,
-        widget: Button,
+        _widget: Button,
         dialog_manager: DialogManager,
 ):
     logger.debug(
@@ -123,7 +122,7 @@ async def add_task_dialog_start(start_data, dialog_manager: DialogManager):
 
 async def go_cancel_yes(
         callback: CallbackQuery,
-        widget: Button,
+        _widget: Button,
         dialog_manager: DialogManager
 ):
     logger.debug(
@@ -136,14 +135,16 @@ async def go_cancel_yes(
         text="Добавление задачи было отменено",
         reply_to_message_id=message_id,
     )
-    await callback.message.delete()
-    await dialog_manager.start(state=StartSG.start_window,
-                               mode=StartMode.RESET_STACK)
+    await dialog_manager.start(
+        state=StartSG.start_window,
+        mode=StartMode.RESET_STACK,
+        show_mode=ShowMode.DELETE_AND_SEND,
+    )
 
 
 async def go_selected_list(
         callback: CallbackQuery,
-        widget: Button,
+        _widget: Button,
         dialog_manager: DialogManager,
 ):
     logger.debug("Установка списка задач...")
