@@ -245,7 +245,7 @@ add_task_dialog = Dialog(
         state=GetTaskDialogSG.save_task_window
     ),
     Window(
-        Const("Вы уверены, что хотите отменить добавление задачи?"),
+        Const("Точно отменить добавление задачи?"),
         Row(
             Button(
                 text=Const("Да"),
