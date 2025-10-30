@@ -182,7 +182,7 @@ async def update_stats_achievs_on_task_added(
     :param user_id: ID пользователя
     :param task_data: свойства задачи
     """
-    logger.debug(f"Entering update_stats_achievs...")
+    logger.debug("Entering update_stats_achievs_on_task_added...")
     try:
         priority_column = f"{task_data.get(
             'priority', LevelEnum.LOW
@@ -294,7 +294,7 @@ async def update_stats_achievs_on_task_added(
             if ua and ua.is_completed:
                 logger.debug(
                     "Пропуск ачивки id=%d "
-                    "т.к. нет связи юзер-ачика или "
+                    "т.к. нет связи юзер-ачивка или "
                     "ачивка уже получена",
                     achievement.achievement_id,
                 )
@@ -341,13 +341,13 @@ async def update_stats_achievs_on_task_added(
 
 async def db_add_task(
         session: AsyncSession,
-        telegram_id: int,
+        user_id: int,
         task_data: dict,
 ):
     """
     Добавляет задачу в базу данных
     :param session: сессия СУБД
-    :param telegram_id: ID пользователя
+    :param user_id: ID пользователя
     :param task_data: настройки задачи
     """
     try:
@@ -357,7 +357,7 @@ async def db_add_task(
                 .join(ListAccess)
                 .where(
                     TaskList.list_id == task_data["list_id"],
-                    ListAccess.user_id == telegram_id,
+                    ListAccess.user_id == user_id,
                     ListAccess.role.in_([
                         AccessRoleEnum.OWNER,
                         AccessRoleEnum.EDITOR,
@@ -371,7 +371,7 @@ async def db_add_task(
                 .join(ListAccess)
                 .where(
                     TaskList.title == list_title,
-                    ListAccess.user_id == telegram_id,
+                    ListAccess.user_id == user_id,
                     ListAccess.role.in_([
                         AccessRoleEnum.OWNER,
                         AccessRoleEnum.EDITOR,
@@ -409,20 +409,20 @@ async def db_add_task(
         session.add(
             TaskAccess(
                 task_id=task.task_id,
-                user_id=telegram_id,
+                user_id=user_id,
                 role=AccessRoleEnum.OWNER,
-                granted_by=telegram_id,
+                granted_by=user_id,
             )
         )
         logger.debug(
             "Задача id=%d пользователя id=%d добавлена",
-            task.task_id, telegram_id,
+            task.task_id, user_id,
         )
         await session.commit()
     except Exception as e:
         await session.rollback()
-        logger.exception("Ошибка в add_task для пользователя "
-                         f"{telegram_id}: {e}")
+        logger.exception("Ошибка в db_add_task для пользователя "
+                         f"{user_id}: {e}")
         raise
     return task_list.list_id, task.task_id
 
@@ -494,3 +494,177 @@ async def get_user_lists(
         "Получено списков: %d, пользователя id=%d", len(lists), user_id
     )
     return lists
+
+
+async def db_add_list(
+        session: AsyncSession,
+        user_id: int,
+        list_data: dict,
+):
+    try:
+        in_list_id = list_data.get("in_list_id")
+        list_title = list_data.get("new_list_title")
+
+        task_list = TaskList(
+            title=list_title,
+            parent_list_id=in_list_id,
+        )
+        session.add(task_list)
+        await session.flush()
+
+        session.add(
+            ListAccess(
+                list_id=task_list.list_id,
+                user_id=user_id,
+                role=AccessRoleEnum.OWNER,
+                granted_by=user_id,
+            )
+        )
+        logger.debug(
+            "Список задач id=%d пользователя id=%d добавлен",
+            task_list.list_id, user_id,
+        )
+        await session.commit()
+    except Exception as e:
+        await session.rollback()
+        logger.exception("Ошибка в db_add_list для пользователя "
+                         f"{user_id}: {e}")
+        raise
+
+    return task_list.list_id
+
+
+async def update_stats_achievs_on_list_added(
+        session: AsyncSession,
+        user_id: int,
+):
+    """
+    Проверяет и обновляет достижения
+    при добавлении списка
+    :param session: сессия СУБД
+    :param user_id: ID пользователя
+    """
+    logger.debug("Entering update_stats_achievs_on_list_added...")
+    try:
+        stmt_upsert_stats = upsert(UserStats).values(
+            user_id=user_id,
+            lists_created=1,
+        )
+        stmt_upsert_stats = stmt_upsert_stats.on_conflict_do_update(
+            index_elements=["user_id"],
+            set_={
+                "lists_created": (UserStats.lists_created
+                                  + stmt_upsert_stats.excluded.lists_created),
+                "updated_at": func.now(),
+            },
+        ).returning(UserStats)
+        result = await session.execute(stmt_upsert_stats)
+        user_stats = result.scalar_one()
+        logger.debug("Обновлена статистика пользователя id=%d", user_id)
+
+        category = "lists_created"
+        achievements_query = await session.execute(
+            select(Achievement).where(Achievement.category == category)
+        )
+        achievements = achievements_query.scalars().all()
+
+        ua_query = await session.execute(
+            select(UserAchievement).where(UserAchievement.user_id == user_id)
+        )
+        user_achievements_map = {
+            ua.achievement_id: ua for ua in ua_query.scalars().all()
+        }
+
+        ua_upserts = []
+
+        for achievement in achievements:
+            if achievement.previous_achievement_id:
+                logger.debug(
+                    "Проверка ачивки id=%d на "
+                    "необходимость предшествующей ачивки id=%d",
+                    achievement.achievement_id,
+                    achievement.previous_achievement_id,
+                )
+                previous_ua = user_achievements_map.get(
+                    achievement.previous_achievement_id)
+                if not previous_ua or not previous_ua.is_completed:
+                    logger.debug(
+                        "Пропуск ачивки id=%d, "
+                        "т.к. нет связи юзер-предыдущая ачивка "
+                        "или предыдущая ачивка ещё не получена",
+                        achievement.achievement_id,
+                    )
+                    continue
+
+            ua = user_achievements_map.get(achievement.achievement_id)
+            if ua and ua.is_completed:
+                logger.debug(
+                    "Пропуск ачивки id=%d "
+                    "т.к. нет связи юзер-ачивка или "
+                    "ачивка уже получена",
+                    achievement.achievement_id,
+                )
+                continue
+
+            current_value = getattr(user_stats, achievement.category, 0)
+            ua_is_completed = current_value >= achievement.required_count
+
+            ua_upserts.append(
+                {
+                    "user_id": user_id,
+                    "achievement_id": achievement.achievement_id,
+                    "progress": current_value,
+                    "is_completed": ua_is_completed,
+                    "unlocked_at": (datetime.now(timezone.utc)
+                                    if ua_is_completed else None),
+                }
+            )
+
+        if ua_upserts:
+            logger.debug("Связи юзер-ачивка получены")
+            stmt_bulk = upsert(UserAchievement).values(ua_upserts)
+            stmt_bulk = stmt_bulk.on_conflict_do_update(
+                index_elements=["user_id", "achievement_id"],
+                set_={
+                    "progress": stmt_bulk.excluded.progress,
+                    "is_completed": stmt_bulk.excluded.is_completed,
+                    "unlocked_at": stmt_bulk.excluded.unlocked_at,
+                    "updated_at": func.now(),
+                },
+            )
+            await session.execute(stmt_bulk)
+
+        logger.debug("Обновлены связи в таблице 'user_achievements'")
+        await session.commit()
+
+    except Exception as e:
+        await session.rollback()
+        logger.exception(
+            "Ошибка в update_achievements_and_stats_on_list_added "
+            f"для пользователя {user_id}: {e}")
+        raise
+
+
+async def add_list_with_stats_achievs_log(
+        session: AsyncSession,
+        user_id: int,
+        list_data: dict,
+):
+    try:
+        list_id = await db_add_list(session, user_id, list_data)
+        await update_stats_achievs_on_list_added(session, user_id)
+        await log_activity(
+            session,
+            action="add_list",
+            success=True,
+            user_id=user_id,
+            list_id=list_id,
+        )
+    except Exception as e:
+        logger.exception("Failed to add list: %s", e)
+        await log_activity(
+            session,
+            action="add_list",
+            success=False,
+            user_id=user_id,
+        )

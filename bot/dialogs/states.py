@@ -17,6 +17,20 @@ class GetTaskDialogSG(StatesGroup):
     cancel_window = State()
 
 
+class TaskManagementDialogSG(StatesGroup):
+    main_tasks_window = State()
+
+
+class TaskListsDialogSG(StatesGroup):
+    main_lists_window = State()
+    input_list_title_window = State()
+    add_list_window = State()
+    in_list_window = State()
+    save_list_window = State()
+    cancel_window = State()
+    change_view_window = State()
+
+
 class ChangeSettingsDialogSG(StatesGroup):
     settings_window = State()
 
