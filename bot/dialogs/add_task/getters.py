@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 async def get_lists(
         dialog_manager: DialogManager,
-        event_from_user: User, **kwargs
+        event_from_user: User, **_kwargs
 ) -> dict:
     logger.debug("Апдейт здесь")
     session = dialog_manager.middleware_data["session"]
@@ -30,6 +30,6 @@ async def get_lists(
     }
 
 
-async def get_task(dialog_manager: DialogManager, **kwargs):
+async def get_task(dialog_manager: DialogManager, **_kwargs):
     logger.debug("Апдейт попал в геттер %s", get_task.__name__)
     return dialog_manager.dialog_data

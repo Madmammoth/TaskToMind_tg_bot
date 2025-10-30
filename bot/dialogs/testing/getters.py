@@ -1,4 +1,4 @@
-async def actions(**kwargs):
+async def actions(**_kwargs):
     products = [
         {"id": 1, "name": "Ferrari", "category": "car",
          "url": "https://www.ferrari.com/"},
