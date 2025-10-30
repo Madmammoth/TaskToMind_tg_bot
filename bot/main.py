@@ -15,9 +15,10 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from bot.dialogs import dialogs
 from bot.handlers import routers
+from bot.handlers.others import others_router
 from bot.middlewares.last_active import LastActiveMiddleware
 from config_data.config import Config, load_config
-from database.middlewares import DbSessionMiddleware
+from database.middlewares.db_session import DbSessionMiddleware
 from database.models.enums import EnumEncoder, enum_decoder
 
 config: Config = load_config()
@@ -64,10 +65,11 @@ async def main():
     dp.include_routers(*routers)
     dp.include_routers(*dialogs)
     setup_dialogs(dp)
+    dp.include_router(others_router)
     logger.info("Including middlewares...")
-    Sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
-    dp.update.middleware(DbSessionMiddleware(Sessionmaker))
-    dp.update.middleware(LastActiveMiddleware(Sessionmaker, redis_client))
+    session_maker = async_sessionmaker(engine, expire_on_commit=False)
+    dp.update.middleware(DbSessionMiddleware(session_maker))
+    dp.update.middleware(LastActiveMiddleware(session_maker, redis_client))
     try:
         await dp.start_polling(
             bot,
