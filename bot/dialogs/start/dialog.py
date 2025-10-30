@@ -1,30 +1,38 @@
-from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.input import TextInput
-from aiogram_dialog.widgets.kbd import Row, Button, Start
+from aiogram.enums import ContentType
+from aiogram_dialog import Dialog, Window, ShowMode
+from aiogram_dialog.widgets.input import MessageInput, TextInput
+from aiogram_dialog.widgets.kbd import Row, Button, Start, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
 from bot.dialogs.add_task.handlers import go_pass
 from bot.dialogs.start.handlers import (
-    add_task, input_task, go_settings, go_features, go_support,
+    go_settings, go_features, go_support, correct_text_task_input,
+    wrong_text_task_input, empty_text_check, empty_text_input,
 )
-from bot.dialogs.states import StartSG, ForTestsDialogSG
+from bot.dialogs.states import StartSG, ForTestsDialogSG, TaskListsDialogSG
 
 start_dialog = Dialog(
     Window(
         Const(
-            "Отправь мне планируемую задачу, чтобы не забыть о ней!",
+            "Выбери нужный пункт меню:",
         ),
         Row(
-            Button(
+            SwitchTo(
                 text=Const("Добавить задачу"),
                 id="add_task",
-                on_click=input_task,
+                state=StartSG.input_task_window,
+                show_mode=ShowMode.DELETE_AND_SEND
             ),
             Button(
                 text=Const("Посмотреть задачи"),
                 id="tasks",
                 on_click=go_pass,
             ),
+        ),
+        Start(
+            text=Const("Управление списками"),
+            id="task_lists_management",
+            state=TaskListsDialogSG.main_lists_window,
         ),
         Row(
             Button(
@@ -52,9 +60,20 @@ start_dialog = Dialog(
     ),
     Window(
         Const("✍️ Введи текст задачи"),
+        SwitchTo(
+            text=Const("Отмена"),
+            id="cancel",
+            state=StartSG.start_window,
+        ),
         TextInput(
-            id="task_input",
-            on_success=add_task,
+            id="text_task_input",
+            type_factory=empty_text_check,
+            on_success=correct_text_task_input,
+            on_error=empty_text_input,
+        ),
+        MessageInput(
+            func=wrong_text_task_input,
+            content_types=ContentType.ANY,
         ),
         state=StartSG.input_task_window,
     ),
