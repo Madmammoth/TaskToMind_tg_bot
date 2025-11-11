@@ -158,9 +158,11 @@ async def go_selected_list(
         await callback.answer("Ошибка: список не найден.")
         return
     dialog_manager.dialog_data.update({
-        "list_id": int(list_id),
+        "list_id": list_id,
         "list_title": list_title,
     })
+    logger.debug("Словарь dialog_data:")
+    logger.debug(dialog_manager.dialog_data)
     await callback.answer(f"Выбран список: {list_title}")
     await dialog_manager.switch_to(state=GetTaskDialogSG.add_task_window)
     logger.debug(
