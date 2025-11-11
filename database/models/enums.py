@@ -8,6 +8,13 @@ class GenderEnum(Enum):
     OTHER = "other"
 
 
+class SystemListTypeEnum(Enum):
+    INBOX = "inbox"
+    ARCHIVE = "archive"
+    TRASH = "trash"
+    NONE = "none"
+
+
 class LevelEnum(Enum):
     HIGH = "high"
     MEDIUM = "medium"
@@ -35,6 +42,7 @@ class AccessRoleEnum(Enum):
 
 ENUM_MAP = {
     "GenderEnum": GenderEnum,
+    "SystemListTypeEnum": SystemListTypeEnum,
     "LevelEnum": LevelEnum,
     "TaskStatusEnum": TaskStatusEnum,
     "ReminderStatusEnum": ReminderStatusEnum,
