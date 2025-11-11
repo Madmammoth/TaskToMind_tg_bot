@@ -1,7 +1,12 @@
 from typing import Optional
 
 from sqlalchemy import (
-    Integer, ForeignKey, BigInteger, Enum, String
+    Integer,
+    ForeignKey,
+    BigInteger,
+    Enum, String,
+    CheckConstraint,
+    UniqueConstraint,
 )
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -21,9 +26,11 @@ class TaskList(Base, make_timestamp_mixin()):
     )
     parent_list_id: Mapped[int | None] = mapped_column(
         Integer,
-        ForeignKey("lists.list_id", ondelete="CASCADE")
+        ForeignKey("lists.list_id", ondelete="CASCADE"),
+        nullable=True,
     )
     is_shared: Mapped[bool] = mapped_column(default=False, nullable=False)
+    is_protected: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     parent: Mapped["TaskList"] = relationship(
         "TaskList",
@@ -62,6 +69,12 @@ class TaskList(Base, make_timestamp_mixin()):
 
 class ListAccess(Base, make_timestamp_mixin()):
     __tablename__ = "list_accesses"
+    __table_args__ = (
+        CheckConstraint("position >= 1", name="check_list_position_min"),
+        UniqueConstraint("user_id", "list_id"),
+        UniqueConstraint("user_id", "parent_list_id", "position",
+                         name="uq_user_parent_position"),
+    )
 
     list_id: Mapped[int] = mapped_column(
         Integer,
@@ -83,6 +96,8 @@ class ListAccess(Base, make_timestamp_mixin()):
         ForeignKey("users.telegram_id", ondelete="SET NULL"),
         nullable=True,
     )
+    parent_list_id: Mapped[int] = mapped_column(Integer, nullable=True)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     user = relationship(
         "User",
