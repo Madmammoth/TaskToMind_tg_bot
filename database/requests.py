@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import select, update, func, and_, exists, delete, case
+from sqlalchemy import select, update, func, and_, exists, delete, case, not_
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
@@ -13,6 +13,7 @@ from database.models import (
     ActivityLog, Task, TaskStatusEnum, TaskInList, TaskAccess,
     UserAchievement, Achievement, LevelEnum,
 )
+from database.models.enums import SystemListTypeEnum
 from database.models.user import UserStats
 
 logger = logging.getLogger(__name__)
@@ -93,10 +94,11 @@ async def upsert_user(
 
         if not old_user:
             titles = [
-                ("Входящие", True),
-                ("Работа", False),
-                ("Быт", False),
-                ("Архив", True)
+                ("Корзина", SystemListTypeEnum.TRASH),
+                ("Входящие", SystemListTypeEnum.INBOX),
+                ("Архив", SystemListTypeEnum.ARCHIVE),
+                ("Работа", SystemListTypeEnum.NONE),
+                ("Быт", SystemListTypeEnum.NONE),
             ]
             default_lists = [TaskList(title=title, is_protected=is_protected)
                              for title, is_protected in titles]
@@ -110,7 +112,7 @@ async def upsert_user(
                     role=AccessRoleEnum.OWNER,
                     granted_by=telegram_id,
                     position=pos
-                ) for pos, lst in enumerate(default_lists, start=1)
+                ) for pos, lst in enumerate(default_lists, start=0)
             ])
 
             session.add_all([
@@ -512,30 +514,52 @@ async def get_ordered_user_lists(
         user_id,
     )
 
-    if mode not in ("normal", "insert", "delete"):
-        raise ValueError(f"Некорректный режим: {mode}")
-
-    sub = aliased(TaskList)
-
     stmt = (
         select(
             TaskList.list_id,
             TaskList.title,
             TaskList.parent_list_id,
-            TaskList.is_protected,
+            TaskList.system_type,
             ListAccess.position,
-            exists()
-            .where(TaskList.list_id == TaskInList.list_id)
-            .correlate(TaskList)
-            .label("has_tasks"),
-            exists()
-            .where(TaskList.list_id == sub.parent_list_id)
-            .correlate(TaskList)
-            .label("has_sub_lists"),
+
         )
         .join(ListAccess, ListAccess.list_id == TaskList.list_id)
         .where(ListAccess.user_id == user_id)
+        .where(ListAccess.position != 0)
     )
+
+    if mode == "delete":
+        sub_list_alias = TaskList.alias("sub_list")
+        task_link_alias = TaskInList.alias("task_link")
+
+        has_sub_lists = (
+            select(sub_list_alias.list_id)
+            .where(
+                sub_list_alias.parent_list_id == TaskList.list_id)  # type: ignore
+            .exists()
+        )
+        has_tasks = (
+            select(task_link_alias.list_id)
+            .where(task_link_alias.list_id == TaskList.list_id)  # type: ignore
+            .exists()
+        )
+
+        stmt = stmt.where(
+            and_(
+                TaskList.system_type == SystemListTypeEnum.NONE,
+                not_(has_sub_lists),
+                not_(has_tasks),
+            )
+        )
+    elif mode == "insert":
+        stmt = stmt.where(TaskList.system_type
+        .not_in([
+            SystemListTypeEnum.INBOX,
+            SystemListTypeEnum.ARCHIVE,
+        ]))
+    elif mode == "task_insert":
+        stmt = stmt.where(TaskList.system_type != SystemListTypeEnum.ARCHIVE)
+
     result = await session.execute(stmt)
     rows = result.all()
 
@@ -544,38 +568,15 @@ async def get_ordered_user_lists(
 
     sub_lists_map: dict[int | None, list] = defaultdict(list)
     nodes: dict[int, dict] = {}
-    for (
-            list_id,
-            title,
-            parent_list_id,
-            is_protected,
-            position,
-            has_tasks,
-            has_sub_lists,
-    ) in rows:
+    for (list_id, title, parent_list_id, system_type, position) in rows:
         nodes[list_id] = {
             "list_id": list_id,
-            "title": title,
+            "list_title": title,
             "parent_list_id": parent_list_id,
-            "is_protected": is_protected,
+            "system_type": system_type,
             "position": position,
-            "has_tasks": has_tasks,
-            "has_sub_lists": has_sub_lists,
         }
         sub_lists_map[parent_list_id].append(nodes[list_id])
-
-    def allow_node(node: dict) -> bool:
-        if mode == "normal":
-            return True
-        if mode == "insert":
-            return not node["is_protected"]
-        if mode == "delete":
-            return (
-                    not node["is_protected"]
-                    and not node["has_tasks"]
-                    and not node["has_sub_lists"]
-            )
-        return True
 
     ordered_lists: list[dict[str, Any]] = []
 
@@ -584,14 +585,13 @@ async def get_ordered_user_lists(
         sub_lists.sort(key=lambda n: n["position"])
         for sub_list in sub_lists:
             comp = f"{sub_list['position']}."
-            new_pos = f"{prefix}{comp}"
-            if allow_node(sub_list):
-                ordered_lists.append({
-                    "list_id": sub_list["list_id"],
-                    "list_title": sub_list["title"],
-                    "pos": new_pos,
-                })
-            traverse(sub_list["list_id"], new_pos)
+            pos = f"{prefix}{comp}"
+            ordered_lists.append({
+                "list_id": sub_list["list_id"],
+                "list_title": sub_list["list_title"],
+                "pos": pos,
+            })
+            traverse(sub_list["list_id"], pos)
 
     traverse(None, "")
     logger.debug(

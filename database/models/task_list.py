@@ -12,7 +12,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, make_timestamp_mixin
-from .enums import AccessRoleEnum
+from .enums import AccessRoleEnum, SystemListTypeEnum
 from .support import ActivityLog
 from .task import TaskInList
 
@@ -29,8 +29,11 @@ class TaskList(Base, make_timestamp_mixin()):
         ForeignKey("lists.list_id", ondelete="CASCADE"),
         nullable=True,
     )
-    is_shared: Mapped[bool] = mapped_column(default=False, nullable=False)
-    is_protected: Mapped[bool] = mapped_column(default=False, nullable=False)
+    system_type: Mapped[SystemListTypeEnum] = mapped_column(
+        Enum(SystemListTypeEnum),
+        nullable=False,
+        default=SystemListTypeEnum.NONE,
+    )
 
     parent: Mapped["TaskList"] = relationship(
         "TaskList",
