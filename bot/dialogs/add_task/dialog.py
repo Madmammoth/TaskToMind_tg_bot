@@ -128,7 +128,7 @@ add_task_dialog = Dialog(
                 on_click=go_pass,
             ),
             SwitchTo(
-                text=Const("Назад"),
+                text=Const("🔙 Назад"),
                 id="back",
                 state=GetTaskDialogSG.add_task_window,
             ),
@@ -168,7 +168,7 @@ add_task_dialog = Dialog(
             ),
         ),
         SwitchTo(
-            text=Const("Назад"),
+            text=Const("🔙 Назад"),
             id="back",
             state=GetTaskDialogSG.add_task_window
         ),
@@ -207,7 +207,7 @@ add_task_dialog = Dialog(
             ),
         ),
         SwitchTo(
-            text=Const("Назад"),
+            text=Const("🔙 Назад"),
             id="back",
             state=GetTaskDialogSG.add_task_window
         ),
@@ -231,12 +231,12 @@ add_task_dialog = Dialog(
         Const("\nВсё верно?"),
         Row(
             Button(
-                text=Const("Да"),
+                text=Const("✅ Да"),
                 id="yes",
                 on_click=go_save_yes,
             ),
             SwitchTo(
-                text=Const("Нет"),
+                text=Const("❌ Нет"),
                 id="no",
                 state=GetTaskDialogSG.add_task_window
             ),
@@ -248,12 +248,12 @@ add_task_dialog = Dialog(
         Const("Точно отменить добавление задачи?"),
         Row(
             Button(
-                text=Const("Да"),
+                text=Const("✅ Да"),
                 id="yes",
                 on_click=go_cancel_yes,
             ),
             SwitchTo(
-                text=Const("Нет"),
+                text=Const("↩️ Нет"),
                 id="no",
                 state=GetTaskDialogSG.add_task_window
             ),
