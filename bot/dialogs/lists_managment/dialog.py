@@ -14,7 +14,7 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.text import Const, Format, List
 
 from bot.dialogs.lists_managment.getters import (
-    get_main_lists,
+    get_lists,
     get_new_list,
     get_tasks,
     get_lists_for_delete,
@@ -31,7 +31,9 @@ from bot.dialogs.lists_managment.handlers import (
     go_delete_lists,
     go_delete_lists_yes,
     select_list,
-    go_save_new_list, clear_in_list,
+    go_save_new_list,
+    clear_in_list,
+    go_pass,
 )
 from bot.dialogs.start.handlers import empty_text_check
 from bot.dialogs.states import TaskListsDialogSG
@@ -59,10 +61,10 @@ lists_management_dialog = Dialog(
             id="new_list",
             state=TaskListsDialogSG.input_list_title_window,
         ),
-        SwitchTo(
+        Button(
             text=Const("🔀 Изменить порядок"),
             id="change_lists_view",
-            state=TaskListsDialogSG.change_view_window,
+            on_click=go_pass,
         ),
         SwitchTo(
             text=Const("Удалить список"),
@@ -73,7 +75,7 @@ lists_management_dialog = Dialog(
             text=Const("🔙 Назад"),
             id="back",
         ),
-        getter=get_main_lists,
+        getter=get_lists,
         state=TaskListsDialogSG.main_lists_window,
     ),
     Window(

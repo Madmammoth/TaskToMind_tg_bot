@@ -14,7 +14,7 @@ from database.requests import (
 logger = logging.getLogger(__name__)
 
 
-async def get_main_lists(
+async def get_lists(
         dialog_manager: DialogManager,
         event_from_user: User,
         **_kwargs

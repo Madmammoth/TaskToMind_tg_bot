@@ -191,9 +191,7 @@ async def go_pass(
         _dialog_manager: DialogManager
 ):
     logger.debug("Заглушка для кнопки-разделителя")
-    await callback.answer(
-        "Это просто визуальный разделитель"
-    )
+    await callback.answer("Эта кнопка пока не работает")
 
 
 async def go_delete_lists(
