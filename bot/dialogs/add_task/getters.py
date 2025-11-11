@@ -3,7 +3,7 @@ import logging
 from aiogram.types import User
 from aiogram_dialog import DialogManager
 
-from database.requests import get_user_lists
+from database.requests import get_ordered_user_lists
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,8 @@ async def get_lists(
     logger.debug("Апдейт здесь")
     session = dialog_manager.middleware_data["session"]
     user_id = event_from_user.id
-    lists = await get_user_lists(session, user_id)
+    mode = dialog_manager.dialog_data.get("mode", "normal")
+    lists = await get_ordered_user_lists(session, user_id, mode)
     dialog_manager.dialog_data["lists"] = {
         lst.list_id: lst.title for lst in lists
     }
