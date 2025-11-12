@@ -194,60 +194,6 @@ async def go_pass(
     await callback.answer("Эта кнопка пока не работает")
 
 
-async def go_delete_lists(
-        callback: CallbackQuery,
-        _widget: Button,
-        dialog_manager: DialogManager
-):
-    logger.debug("Апдейт здесь")
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    selected_ids = dialog_manager.find("m_lists").get_checked()
-    if not selected_ids:
-        await callback.answer("Ничего не выбрано!", show_alert=True)
-        return
-    selected_ids = list(map(str, sorted(map(int, selected_ids))))
-    logger.debug("selected_ids = %s", list(selected_ids))
-    lists = dialog_manager.dialog_data.get("lists", {})
-    logger.debug("lists = %s", lists)
-    selected_lists = [
-        (i, lst_id, lists[lst_id])
-        for i, lst_id in enumerate(selected_ids, start=1)
-        if lst_id in lists
-    ]
-    logger.debug("selected_lists = %s", selected_lists)
-    dialog_manager.dialog_data["selected_lists"] = selected_lists
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    await dialog_manager.switch_to(
-        state=TaskListsDialogSG.ack_delete_lists_window)
-
-
-async def go_delete_lists_yes(
-        callback: CallbackQuery,
-        _widget: Button,
-        dialog_manager: DialogManager
-):
-    logger.debug("Апдейт здесь")
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    session: AsyncSession = dialog_manager.middleware_data["session"]
-    user_id = callback.from_user.id
-    lists_to_delete = dialog_manager.dialog_data.get("selected_lists", {})
-    list_ids_to_delete = [
-        int(list_id) for i, list_id, title in lists_to_delete
-    ]
-    await delete_lists_with_stats_achievs_log(
-        session, user_id, list_ids_to_delete
-    )
-    if len(lists_to_delete) == 1:
-        await callback.answer("Список успешно удалён!")
-    else:
-        await callback.answer("Списки успешно удалены!")
-    del dialog_manager.dialog_data["selected_lists"]
-    await dialog_manager.switch_to(state=TaskListsDialogSG.main_lists_window)
-
-
 async def select_list(
         callback: CallbackQuery,
         _widget: Button,

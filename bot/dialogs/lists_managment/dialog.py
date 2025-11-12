@@ -9,7 +9,6 @@ from aiogram_dialog.widgets.kbd import (
     Cancel,
     Row,
     ScrollingGroup,
-    Multiselect,
 )
 from aiogram_dialog.widgets.text import Const, Format, List
 
@@ -17,8 +16,6 @@ from bot.dialogs.lists_managment.getters import (
     get_lists,
     get_new_list,
     get_tasks,
-    get_lists_for_delete,
-    get_selected_lists_for_delete,
     get_lists_for_parent,
 )
 from bot.dialogs.lists_managment.handlers import (
@@ -28,8 +25,6 @@ from bot.dialogs.lists_managment.handlers import (
     wrong_title_list_input,
     empty_title_input,
     go_selected_task,
-    go_delete_lists,
-    go_delete_lists_yes,
     select_list,
     go_save_new_list,
     clear_in_list,
@@ -65,11 +60,6 @@ lists_management_dialog = Dialog(
             text=Const("🔀 Изменить порядок"),
             id="change_lists_view",
             on_click=go_pass,
-        ),
-        SwitchTo(
-            text=Const("Удалить список"),
-            id="delete_lists",
-            state=TaskListsDialogSG.delete_lists_window,
         ),
         Cancel(
             text=Const("🔙 Назад"),
@@ -197,61 +187,6 @@ lists_management_dialog = Dialog(
         ),
         getter=get_tasks,
         state=TaskListsDialogSG.list_with_tasks
-    ),
-    Window(
-        Const("Доступные для удаления списки задач."),
-        Const("Выбери те, что нужно удалить:"),
-        ScrollingGroup(
-            Multiselect(
-                Format("❌ {item[list_title]} ❌"),
-                Format("{item[list_title]}"),
-                id="m_lists",
-                item_id_getter=lambda item: item["list_id"],
-                items="lists"
-            ),
-            id="scroll_lists_search",
-            width=1,
-            height=5,
-        ),
-        Button(
-            text=Const("🗑️ Удалить выбранные"),
-            id="delete_selected",
-            on_click=go_delete_lists,
-        ),
-        SwitchTo(
-            text=Const("↩️ Отмена"),
-            id="back",
-            state=TaskListsDialogSG.main_lists_window,
-        ),
-        getter=get_lists_for_delete,
-        state=TaskListsDialogSG.delete_lists_window,
-    ),
-    Window(
-        Const("Будут удалены следующие списки задач:"),
-        List(
-            Format("{item[0]}. {item[2]}"),
-            items="selected_lists",
-        ),
-        Const("\nВсё верно?"),
-        Row(
-            Button(
-                text=Const("✅ Да"),
-                id="yes",
-                on_click=go_delete_lists_yes,
-            ),
-            SwitchTo(
-                text=Const("❌ Нет"),
-                id="no",
-                state=TaskListsDialogSG.delete_lists_window,
-            ),
-        ),
-        SwitchTo(
-            text=Const("↩️ Отмена"),
-            id="cancel",
-            state=TaskListsDialogSG.main_lists_window,
-        ),
-        getter=get_selected_lists_for_delete,
-        state=TaskListsDialogSG.ack_delete_lists_window,
     ),
     Window(
         Const(
