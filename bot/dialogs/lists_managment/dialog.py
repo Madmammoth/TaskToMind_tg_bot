@@ -174,6 +174,11 @@ lists_management_dialog = Dialog(
             id="move_list",
             state=TaskListsDialogSG.move_list_window,
         ),
+        Button(
+            text=Const("Поделиться списком"),
+            id="list_share",
+            on_click=go_pass,
+        ),
         SwitchTo(
             text=Const("Удалить список"),
             id="delete_list",
