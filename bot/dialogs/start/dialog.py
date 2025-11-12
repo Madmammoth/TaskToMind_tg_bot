@@ -4,10 +4,15 @@ from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Row, Button, Start, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
-from bot.dialogs.add_task.handlers import go_pass
+from bot.dialogs.common.handlers import go_pass
 from bot.dialogs.start.handlers import (
-    go_settings, go_features, go_support, correct_text_task_input,
-    wrong_text_task_input, empty_text_check, empty_text_input,
+    go_settings,
+    go_features,
+    go_support,
+    correct_text_task_input,
+    wrong_text_task_input,
+    empty_text_check,
+    empty_text_input,
 )
 from bot.dialogs.states import StartSG, ForTestsDialogSG, TaskListsDialogSG
 

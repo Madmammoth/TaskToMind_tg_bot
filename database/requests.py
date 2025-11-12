@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import select, update, func, and_, exists, delete, case, not_
+from sqlalchemy import select, update, func, and_, exists, delete, case
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
@@ -528,43 +528,23 @@ async def get_ordered_user_lists(
         .where(ListAccess.position != 0)
     )
 
-    if mode == "delete":
-        sub_list_alias = TaskList.alias("sub_list")
-        task_link_alias = TaskInList.alias("task_link")
-
-        has_sub_lists = (
-            select(sub_list_alias.list_id)
-            .where(
-                sub_list_alias.parent_list_id == TaskList.list_id)  # type: ignore
-            .exists()
-        )
-        has_tasks = (
-            select(task_link_alias.list_id)
-            .where(task_link_alias.list_id == TaskList.list_id)  # type: ignore
-            .exists()
-        )
-
-        stmt = stmt.where(
-            and_(
-                TaskList.system_type == SystemListTypeEnum.NONE,
-                not_(has_sub_lists),
-                not_(has_tasks),
-            )
-        )
-    elif mode == "insert":
+    if mode == "add_in_list":
+        logger.debug("show_lists_mode=add_in_list")
         stmt = stmt.where(TaskList.system_type
         .not_in([
             SystemListTypeEnum.INBOX,
             SystemListTypeEnum.ARCHIVE,
         ]))
-    elif mode == "task_insert":
+    elif mode == "add_task":
+        logger.debug("show_lists_mode=add_task")
         stmt = stmt.where(TaskList.system_type != SystemListTypeEnum.ARCHIVE)
 
     result = await session.execute(stmt)
     rows = result.all()
-
     if not rows:
+        logger.debug("rows is empty")
         return []
+    logger.debug("rows=%s", rows)
 
     sub_lists_map: dict[int | None, list] = defaultdict(list)
     nodes: dict[int, dict] = {}
@@ -587,7 +567,7 @@ async def get_ordered_user_lists(
             comp = f"{sub_list['position']}."
             pos = f"{prefix}{comp}"
             ordered_lists.append({
-                "list_id": sub_list["list_id"],
+                "list_id": str(sub_list["list_id"]),
                 "list_title": sub_list["list_title"],
                 "pos": pos,
             })

@@ -4,36 +4,11 @@ from aiogram_dialog import DialogManager
 
 from database.models import User
 from database.requests import (
-    get_ordered_user_lists,
     get_user_tasks_in_list,
-    get_user_lists_for_delete,
-    get_user_lists_for_parent,
     get_user_sub_lists_in_list,
 )
 
 logger = logging.getLogger(__name__)
-
-
-async def get_lists(
-        dialog_manager: DialogManager,
-        event_from_user: User,
-        **_kwargs
-) -> dict:
-    logger.debug("Апдейт здесь")
-    session = dialog_manager.middleware_data["session"]
-    user_id = event_from_user.id
-    mode = dialog_manager.dialog_data.get("mode", "normal")
-    buttons_data = await get_ordered_user_lists(session, user_id, mode)
-    dialog_manager.dialog_data["lists"] = {
-        lst["list_id"]: lst["list_title"] for lst in buttons_data
-    }
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    logger.debug("Получившийся список для кнопок:")
-    logger.debug(buttons_data)
-    return {
-        "lists": buttons_data,
-    }
 
 
 async def get_new_list(dialog_manager: DialogManager, **_kwargs):
@@ -77,32 +52,4 @@ async def get_tasks(
         "sub_lists": sub_lists,
         "tasks": buttons_data,
         "is_empty_list": not tasks and not sub_lists,
-    }
-
-
-async def get_lists_for_parent(
-        dialog_manager: DialogManager,
-        event_from_user: User,
-        **_kwargs
-):
-    logger.debug("Апдейт здесь")
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    session = dialog_manager.middleware_data["session"]
-    user_id = event_from_user.id
-    lists = await get_user_lists_for_parent(session, user_id)
-    dialog_manager.dialog_data["lists_for_parent"] = {
-        str(lst.list_id): lst.title for lst in lists
-    }
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    buttons_data = [
-        {"list_id": str(lst.list_id), "list_title": lst.title}
-        for lst in lists
-    ]
-    logger.debug("Получившийся список для кнопок:")
-    logger.debug(buttons_data)
-    return {
-        "lists_for_parent": buttons_data,
-        "has_lists": bool(lists),
     }

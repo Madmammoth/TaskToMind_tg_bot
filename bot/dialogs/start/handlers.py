@@ -34,6 +34,7 @@ def make_default_task_data(message_id, task_text) -> dict[str, str | Any]:
         "priority_label": PRIORITY_LABELS[LevelEnum.LOW],
         "urgency": LevelEnum.LOW,
         "urgency_label": URGENCY_LABELS[LevelEnum.LOW],
+        "show_lists_mode": "add_task",
     }
     return task_data
 

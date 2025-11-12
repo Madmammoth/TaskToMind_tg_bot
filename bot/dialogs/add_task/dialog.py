@@ -1,14 +1,19 @@
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.kbd import (
-    Row, Button, SwitchTo, Column, Next, Back, ListGroup
+    Row, Button, SwitchTo, Column, Next, Back, ListGroup, ScrollingGroup
 )
 from aiogram_dialog.widgets.text import Format, Const
 
-from bot.dialogs.add_task.getters import get_task, get_lists
+from bot.dialogs.add_task.getters import get_task
 from bot.dialogs.add_task.handlers import (
-    go_pass, go_cancel_yes, go_save_yes, go_priority, go_urgency,
-    add_task_dialog_start, go_selected_list
+    go_cancel_yes,
+    go_save_yes,
+    go_priority,
+    go_urgency,
+    add_task_dialog_start,
 )
+from bot.dialogs.common.getters import get_lists
+from bot.dialogs.common.handlers import go_selected_list, go_pass
 from bot.dialogs.states import GetTaskDialogSG
 
 add_task_dialog = Dialog(
@@ -111,15 +116,20 @@ add_task_dialog = Dialog(
     ),
     Window(
         Const("Выбери нужный список:\n"),
-        ListGroup(
-            Button(
-                Format("{item[list_title]}"),
-                id="selected_list",
-                on_click=go_selected_list,
+        ScrollingGroup(
+            ListGroup(
+                Button(
+                    Format("{item[pos]} {item[list_title]}"),
+                    id="selected_list",
+                    on_click=go_selected_list,
+                ),
+                id="lists_search",
+                item_id_getter=lambda item: item["list_id"],
+                items="lists"
             ),
-            id="lists_search",
-            item_id_getter=lambda item: item["list_id"],
-            items="lists"
+            id="scroll_lists_search",
+            width=1,
+            height=5,
         ),
         Row(
             Button(

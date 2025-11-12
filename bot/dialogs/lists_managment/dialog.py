@@ -13,23 +13,21 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.text import Const, Format, List
 
 from bot.dialogs.lists_managment.getters import (
-    get_lists,
     get_new_list,
     get_tasks,
-    get_lists_for_parent,
 )
 from bot.dialogs.lists_managment.handlers import (
-    go_selected_list,
     go_cancel_yes,
     correct_title_list_input,
     wrong_title_list_input,
     empty_title_input,
     go_selected_task,
-    select_list,
     go_save_new_list,
     clear_in_list,
-    go_pass,
+    go_insert_in_list, select_list,
 )
+from bot.dialogs.common.getters import get_lists
+from bot.dialogs.common.handlers import go_selected_list, go_pass
 from bot.dialogs.start.handlers import empty_text_check
 from bot.dialogs.states import TaskListsDialogSG
 
@@ -97,15 +95,15 @@ lists_management_dialog = Dialog(
             id="save",
             on_click=go_save_new_list
         ),
-        SwitchTo(
+        Button(
             text=Const("Переименовать список"),
             id="rename_list",
-            state=TaskListsDialogSG.rename_new_list_window,
+            on_click=go_pass,
         ),
-        SwitchTo(
+        Button(
             text=Const("📥 Вложить в список"),
             id="in_list",
-            state=TaskListsDialogSG.in_list_window,
+            on_click=go_insert_in_list,
         ),
         Button(
             text=Const("Убрать из списка"),
@@ -196,23 +194,23 @@ lists_management_dialog = Dialog(
     Window(
         Const(
             "Выбери список, в который вложить новый список:",
-            when="has_lists",
+            when="lists",
         ),
         Const(
             "Нет списков для вложения.",
-            when=~F["has_lists"],
+            when=~F["lists"],
         ),
         ScrollingGroup(
             ListGroup(
                 Button(
-                    Format("{item[list_title]}"),
+                    Format("{item[pos]} {item[list_title]}"),
                     id="selected_list",
                     on_click=select_list,
                 ),
                 id="lists_search",
                 item_id_getter=lambda item: item["list_id"],
-                items="lists_for_parent",
-                when="has_lists",
+                items="lists",
+                when="lists",
             ),
             id="scroll_lists_search",
             width=1,
@@ -221,9 +219,9 @@ lists_management_dialog = Dialog(
         SwitchTo(
             text=Const("↩️ Отмена"),
             id="back",
-            state=TaskListsDialogSG.main_lists_window,
+            state=TaskListsDialogSG.add_list_window,
         ),
-        getter=get_lists_for_parent,
+        getter=get_lists,
         state=TaskListsDialogSG.in_list_window
     ),
 )

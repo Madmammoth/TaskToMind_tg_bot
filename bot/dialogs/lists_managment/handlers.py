@@ -13,34 +13,9 @@ from bot.dialogs.states import (
 )
 from database.requests import (
     add_list_with_stats_achievs_log,
-    delete_lists_with_stats_achievs_log,
 )
 
 logger = logging.getLogger(__name__)
-
-
-async def go_selected_list(
-        callback: CallbackQuery,
-        _widget: Button,
-        dialog_manager: DialogManager,
-):
-    logger.debug("Открытие списка задач...")
-    sub_manager = cast(SubManager, dialog_manager)
-    dialog_manager = sub_manager.manager
-    list_id = sub_manager.item_id
-    logger.debug("Нажата кнопка для item_id=%s", list_id)
-    lists = dialog_manager.dialog_data.get("lists", {})
-    dialog_manager.dialog_data["list_id"] = str(list_id)
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    await callback.answer(f"Выбран список: {lists[list_id]}")
-    await dialog_manager.switch_to(
-        state=TaskListsDialogSG.list_with_tasks
-    )
-    logger.debug(
-        "Установлен список задач id=%s, title=%s",
-        list_id, lists[list_id]
-    )
 
 
 async def correct_title_list_input(
@@ -62,7 +37,8 @@ async def correct_title_list_input(
         return
     dialog_manager.dialog_data.update({
         "message_id": str(message.message_id),
-        "new_list_title": list_title
+        "new_list_title": list_title,
+        "show_lists_mode": "add_list",
     })
     await dialog_manager.switch_to(
         state=TaskListsDialogSG.add_list_window,
@@ -96,6 +72,18 @@ async def wrong_title_list_input(
     )
 
 
+async def go_insert_in_list(
+        _callback: CallbackQuery,
+        _widget: Button,
+        dialog_manager: DialogManager
+):
+    logger.debug("Вложение списка задач в другой список задач")
+    dialog_manager.dialog_data["show_lists_mode"] = "add_in_list"
+    await dialog_manager.switch_to(
+        state=TaskListsDialogSG.in_list_window,
+    )
+
+
 async def go_save_new_list(
         callback: CallbackQuery,
         _widget: Button,
@@ -110,8 +98,12 @@ async def go_save_new_list(
         user_id=user_id,
         list_data=dialog_manager.dialog_data,
     )
-    dialog_manager.dialog_data.update({"in_list_id": None,
-                                       "in_list_title": None})
+    dialog_manager.dialog_data.update({
+        "message_id": None,
+        "in_list_id": None,
+        "in_list_title": None,
+        "show_lists_mode": "normal",
+    })
     await callback.bot.send_message(
         chat_id=callback.message.chat.id,
         text="Список задач успешно добавлен!",
@@ -140,6 +132,12 @@ async def go_cancel_yes(
 ):
     logger.debug("Отмена создания списка")
     message_id = int(dialog_manager.dialog_data["message_id"])
+    dialog_manager.dialog_data.update({
+        "message_id": None,
+        "in_list_id": None,
+        "in_list_title": None,
+        "show_lists_mode": "normal",
+    })
     await callback.bot.send_message(
         chat_id=callback.message.chat.id,
         text="Создание списка было отменено",
@@ -185,15 +183,6 @@ async def go_selected_task(
     )
 
 
-async def go_pass(
-        callback: CallbackQuery,
-        _widget: Button,
-        _dialog_manager: DialogManager
-):
-    logger.debug("Заглушка для кнопки-разделителя")
-    await callback.answer("Эта кнопка пока не работает")
-
-
 async def select_list(
         callback: CallbackQuery,
         _widget: Button,
@@ -204,7 +193,7 @@ async def select_list(
     dialog_manager = sub_manager.manager
     list_id = sub_manager.item_id
     logger.debug("Нажата кнопка для item_id=%s", list_id)
-    lists = dialog_manager.dialog_data.get("lists_for_parent", {})
+    lists = dialog_manager.dialog_data.get("lists", {})
     dialog_manager.dialog_data.update({"in_list_id": str(list_id),
                                        "in_list_title": lists[list_id]})
     logger.debug("Словарь dialog_data:")
