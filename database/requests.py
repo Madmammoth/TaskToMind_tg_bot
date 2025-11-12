@@ -3,15 +3,24 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import select, update, func, and_, exists, delete, case
+from sqlalchemy import select, update, func, and_, exists
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import aliased
 
 from database.models import (
-    User, TaskList, UserTag, ListAccess, AccessRoleEnum,
-    ActivityLog, Task, TaskStatusEnum, TaskInList, TaskAccess,
-    UserAchievement, Achievement, LevelEnum,
+    AccessRoleEnum,
+    Achievement,
+    ActivityLog,
+    LevelEnum,
+    ListAccess,
+    Task,
+    TaskAccess,
+    TaskInList,
+    TaskList,
+    TaskStatusEnum,
+    User,
+    UserAchievement,
+    UserTag,
 )
 from database.models.enums import SystemListTypeEnum
 from database.models.user import UserStats
