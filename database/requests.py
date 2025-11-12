@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import select, update, func, and_, exists
+from sqlalchemy import select, update, func, and_, exists, delete
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -886,3 +886,89 @@ async def get_user_sub_lists_in_list(
         len(sub_lists), list_id, user_id,
     )
     return sub_lists
+
+
+async def db_delete_list(
+        session: AsyncSession,
+        user_id: int,
+        list_id: int,
+):
+    logger.debug(
+        "Удаление списка id=%d пользователя id=%d",
+        list_id, user_id,
+    )
+
+    try:
+        stmt = delete(TaskList).where(TaskList.list_id == list_id)
+        await session.execute(stmt)
+        await session.commit()
+        logger.debug(
+            "Список задач id=%d удалён у пользователя id=%d",
+            list_id, user_id,
+        )
+    except Exception as e:
+        await session.rollback()
+        logger.exception(
+            "Ошибка в db_delete_list для пользователя id=%d: %s",
+            user_id, e,
+        )
+        raise
+
+
+async def update_stats_on_list_deleted(
+        session: AsyncSession,
+        user_id: int,
+):
+    logger.debug(
+        "Обновление статистики пользователя id=%d при удалении списка",
+        user_id
+    )
+    try:
+        stmt_upsert_stats = upsert(UserStats).values(
+            user_id=user_id,
+            lists_deleted=1,
+        )
+        stmt_upsert_stats = stmt_upsert_stats.on_conflict_do_update(
+            index_elements=["user_id"],
+            set_={
+                "lists_deleted": (UserStats.lists_deleted
+                                  + stmt_upsert_stats.excluded.lists_deleted),
+                "updated_at": func.now(),
+            },
+        )
+        await session.execute(stmt_upsert_stats)
+        await session.commit()
+        logger.debug("Обновлена статистика пользователя id=%d", user_id)
+    except Exception as e:
+        await session.rollback()
+        logger.exception(
+            "Ошибка в update_stats_on_list_deleted "
+            "для пользователя id=%d: %s",
+            user_id, e,
+        )
+        raise
+
+
+async def delete_list_with_stats_log(
+        session: AsyncSession,
+        user_id: int,
+        list_id: int,
+):
+    try:
+        list_id = await db_delete_list(session, user_id, list_id)
+        await update_stats_on_list_deleted(session, user_id)
+        await log_activity(
+            session,
+            action="delete_list",
+            success=True,
+            user_id=user_id,
+            list_id=list_id,
+        )
+    except Exception as e:
+        logger.exception("Failed to add list: %s", e)
+        await log_activity(
+            session,
+            action="delete_list",
+            success=False,
+            user_id=user_id,
+        )

@@ -53,3 +53,16 @@ async def get_tasks(
         "tasks": buttons_data,
         "is_empty_list": not tasks and not sub_lists,
     }
+
+
+async def get_list_title_to_delete(
+        dialog_manager: DialogManager,
+        **_kwargs
+) -> dict:
+    logger.debug("Апдейт здесь")
+    logger.debug("Словарь dialog_data:")
+    logger.debug(dialog_manager.dialog_data)
+    list_id = dialog_manager.dialog_data.get("list_id")
+    lists = dialog_manager.dialog_data.get("lists")
+    list_title = lists[list_id]
+    return {"list_title": list_title}

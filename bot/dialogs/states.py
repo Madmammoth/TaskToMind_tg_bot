@@ -36,8 +36,6 @@ class TaskListsDialogSG(StatesGroup):
     rename_list_window = State()
     move_list_window = State()
     delete_list_window = State()
-    delete_lists_window = State()
-    ack_delete_lists_window = State()
     cancel_window = State()
     change_view_window = State()
 

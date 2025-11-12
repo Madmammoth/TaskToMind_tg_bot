@@ -13,6 +13,7 @@ from bot.dialogs.states import (
 )
 from database.requests import (
     add_list_with_stats_achievs_log,
+    delete_list_with_stats_log,
 )
 
 logger = logging.getLogger(__name__)
@@ -205,4 +206,36 @@ async def select_list(
     logger.debug(
         "Установлен список задач id=%s, title=%s",
         list_id, lists[list_id]
+    )
+
+
+async def go_delete_list_yes(
+        callback: CallbackQuery,
+        _widget: Button,
+        dialog_manager: DialogManager,
+):
+    logger.debug("Удаление списка задач")
+    session: AsyncSession = dialog_manager.middleware_data["session"]
+    user_id = callback.from_user.id
+    list_id = dialog_manager.dialog_data.get("list_id")
+    if not list_id:
+        logger.debug("Не найден list_id в dialog_data")
+        await callback.answer("Список не найден")
+        return
+    lists = dialog_manager.dialog_data.get("lists")
+    if not lists:
+        logger.debug("Не найдены списки пользователя в dialog_data")
+        await callback.answer("Списки не найдены")
+        return
+    list_title = lists[list_id]
+    await delete_list_with_stats_log(
+        session=session,
+        user_id=user_id,
+        list_id=int(list_id),
+    )
+    text = f"Успешно удалён список задач: {list_title}"
+    await callback.message.answer(text=text)
+    await dialog_manager.switch_to(
+        state=TaskListsDialogSG.main_lists_window,
+        show_mode=ShowMode.DELETE_AND_SEND,
     )

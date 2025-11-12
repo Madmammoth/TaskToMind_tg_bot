@@ -12,9 +12,12 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Const, Format, List
 
+from bot.dialogs.common.getters import get_lists
+from bot.dialogs.common.handlers import go_selected_list, go_pass
 from bot.dialogs.lists_managment.getters import (
     get_new_list,
     get_tasks,
+    get_list_title_to_delete,
 )
 from bot.dialogs.lists_managment.handlers import (
     go_cancel_yes,
@@ -24,10 +27,10 @@ from bot.dialogs.lists_managment.handlers import (
     go_selected_task,
     go_save_new_list,
     clear_in_list,
-    go_insert_in_list, select_list,
+    go_insert_in_list,
+    select_list,
+    go_delete_list_yes,
 )
-from bot.dialogs.common.getters import get_lists
-from bot.dialogs.common.handlers import go_selected_list, go_pass
 from bot.dialogs.start.handlers import empty_text_check
 from bot.dialogs.states import TaskListsDialogSG
 
@@ -162,15 +165,15 @@ lists_management_dialog = Dialog(
             width=1,
             height=5,
         ),
-        SwitchTo(
+        Button(
             text=Const("Изменить имя списка"),
             id="rename_list",
-            state=TaskListsDialogSG.rename_list_window,
+            on_click=go_pass,
         ),
-        SwitchTo(
+        Button(
             text=Const("Переместить список"),
             id="move_list",
-            state=TaskListsDialogSG.move_list_window,
+            on_click=go_pass,
         ),
         Button(
             text=Const("Поделиться списком"),
@@ -223,5 +226,23 @@ lists_management_dialog = Dialog(
         ),
         getter=get_lists,
         state=TaskListsDialogSG.in_list_window
+    ),
+    Window(
+        Const("Точно удалить этот список задач:"),
+        Format("{list_title}"),
+        Row(
+            Button(
+                text=Const("✅ Да"),
+                id="yes",
+                on_click=go_delete_list_yes,
+            ),
+            SwitchTo(
+                text=Const("↩️ Нет"),
+                id="no",
+                state=TaskListsDialogSG.list_with_tasks
+            ),
+        ),
+        getter=get_list_title_to_delete,
+        state=TaskListsDialogSG.delete_list_window,
     ),
 )
