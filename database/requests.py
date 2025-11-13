@@ -109,8 +109,8 @@ async def upsert_user(
                 ("Работа", SystemListTypeEnum.NONE),
                 ("Быт", SystemListTypeEnum.NONE),
             ]
-            default_lists = [TaskList(title=title, is_protected=is_protected)
-                             for title, is_protected in titles]
+            default_lists = [TaskList(title=title, system_type=system_type)
+                             for title, system_type in titles]
             session.add_all(default_lists)
             await session.flush()
 
@@ -148,8 +148,10 @@ async def upsert_user(
         return {"action": "update_user"}
     except Exception as e:
         await session.rollback()
-        logger.exception("Ошибка в db_upsert_user для пользователя "
-                         f"{telegram_id}: {e}")
+        logger.exception(
+            "Ошибка в upsert_user для пользователя id=%d: %s",
+            telegram_id, e
+        )
         raise
 
 
