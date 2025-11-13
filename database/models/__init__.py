@@ -29,7 +29,7 @@ from .enums import (
     ReminderStatusEnum,
     AccessRoleEnum
 )
-from .support import Reminder, ActivityLog, RecurrenceRule
+from .tracking import Reminder, ActivityLog, RecurrenceRule
 from .user import User
 from .task_list import TaskList, ListAccess
 from .task import Task, TaskInList, TaskAccess

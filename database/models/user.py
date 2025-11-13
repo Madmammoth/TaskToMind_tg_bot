@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .achievement import UserAchievement
 from .base import Base, make_timestamp_mixin
 from .enums import AccessRoleEnum, GenderEnum
-from .support import Reminder, ActivityLog
+from .tracking import Reminder, ActivityLog
 from .tag import Tag, UserTag
 from .task import Task, TaskAccess
 from .task_list import TaskList, ListAccess

@@ -13,7 +13,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, make_timestamp_mixin
 from .enums import AccessRoleEnum, SystemListTypeEnum
-from .support import ActivityLog
+from .tracking import ActivityLog
 from .task import TaskInList
 
 

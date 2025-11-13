@@ -16,7 +16,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, make_timestamp_mixin
 from .enums import TaskStatusEnum, LevelEnum, AccessRoleEnum
-from .support import Reminder, ActivityLog, RecurrenceRule
+from .tracking import Reminder, ActivityLog, RecurrenceRule
 from .tag import TaskTag
 
 
