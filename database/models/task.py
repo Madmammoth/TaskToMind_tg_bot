@@ -10,7 +10,6 @@ from sqlalchemy import (
     Enum,
     DateTime,
     String,
-    UniqueConstraint,
 )
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -142,13 +141,6 @@ class TaskInList(Base, make_timestamp_mixin(include_updated=False)):
 
 class TaskAccess(Base, make_timestamp_mixin()):
     __tablename__ = "task_accesses"
-    __table_args__ = (
-        CheckConstraint(
-            "position >= 1",
-            name="check_task_position_min"
-        ),
-        UniqueConstraint("user_id", "position"),
-    )
 
     task_id: Mapped[int] = mapped_column(
         Integer,
@@ -170,7 +162,6 @@ class TaskAccess(Base, make_timestamp_mixin()):
         ForeignKey("users.telegram_id", ondelete="SET NULL"),
         nullable=False,
     )
-    position: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
 
     user = relationship(
         "User",

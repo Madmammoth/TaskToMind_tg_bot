@@ -833,15 +833,12 @@ def upgrade() -> None:
     sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('role', sa.Enum('OWNER', 'EDITOR', 'VIEWER', name='accessroleenum'), nullable=False),
     sa.Column('granted_by', sa.BigInteger(), nullable=False),
-    sa.Column('position', sa.SmallInteger(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.CheckConstraint('position >= 1', name='check_task_position_min'),
     sa.ForeignKeyConstraint(['granted_by'], ['users.telegram_id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['task_id'], ['tasks.task_id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('task_id', 'user_id'),
-    sa.UniqueConstraint('user_id', 'position', name='unique_user_task_position')
+    sa.PrimaryKeyConstraint('task_id', 'user_id')
     )
     op.create_table('task_tags',
     sa.Column('task_id', sa.Integer(), nullable=False),
