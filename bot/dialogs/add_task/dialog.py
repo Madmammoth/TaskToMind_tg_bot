@@ -10,10 +10,10 @@ from bot.dialogs.add_task.handlers import (
     go_save_yes,
     go_priority,
     go_urgency,
-    add_task_dialog_start,
+    add_task_dialog_start, select_list,
 )
 from bot.dialogs.common.getters import get_lists
-from bot.dialogs.common.handlers import go_selected_list, go_pass
+from bot.dialogs.common.handlers import go_pass
 from bot.dialogs.states import GetTaskDialogSG
 
 add_task_dialog = Dialog(
@@ -121,7 +121,7 @@ add_task_dialog = Dialog(
                 Button(
                     Format("{item[pos]} {item[list_title]}"),
                     id="selected_list",
-                    on_click=go_selected_list,
+                    on_click=select_list,
                 ),
                 id="lists_search",
                 item_id_getter=lambda item: item["list_id"],

@@ -209,6 +209,30 @@ async def select_list(
     )
 
 
+async def go_selected_list(
+        callback: CallbackQuery,
+        _widget: Button,
+        dialog_manager: DialogManager,
+):
+    logger.debug("Открытие списка задач...")
+    sub_manager = cast(SubManager, dialog_manager)
+    dialog_manager = sub_manager.manager
+    list_id = sub_manager.item_id
+    logger.debug("Нажата кнопка для item_id=%s", list_id)
+    lists = dialog_manager.dialog_data.get("lists", {})
+    dialog_manager.dialog_data["list_id"] = str(list_id)
+    logger.debug("Словарь dialog_data:")
+    logger.debug(dialog_manager.dialog_data)
+    await callback.answer(f"Выбран список: {lists[list_id]}")
+    await dialog_manager.switch_to(
+        state=TaskListsDialogSG.list_with_tasks
+    )
+    logger.debug(
+        "Установлен список задач id=%s, title=%s",
+        list_id, lists[list_id]
+    )
+
+
 async def go_delete_list_yes(
         callback: CallbackQuery,
         _widget: Button,

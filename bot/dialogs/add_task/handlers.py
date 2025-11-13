@@ -1,16 +1,29 @@
 import logging
+from typing import cast
 
 from aiogram.types import CallbackQuery
-from aiogram_dialog import DialogManager, StartMode, ShowMode
+from aiogram_dialog import DialogManager, StartMode, ShowMode, SubManager
 from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.dialogs.states import StartSG
+from bot.dialogs.states import StartSG, GetTaskDialogSG
 from database.models import LevelEnum
 from database.requests import add_task_with_stats_achievs_log
 from locales.ru import PRIORITY_LABELS, URGENCY_LABELS
 
 logger = logging.getLogger(__name__)
+
+
+async def add_task_dialog_start(start_data, dialog_manager: DialogManager):
+    logger.debug("Объединение стартового и основного словарей диалога")
+    logger.debug("Исходные словари:")
+    logger.debug("start_data: %s", start_data)
+    logger.debug("dialog_manager.dialog_data: %s", dialog_manager.dialog_data)
+
+    dialog_manager.dialog_data.update(start_data)
+
+    logger.debug("Полученный словарь:")
+    logger.debug("dialog_manager.dialog_data: %s", dialog_manager.dialog_data)
 
 
 async def go_priority(
@@ -93,16 +106,33 @@ async def go_save_yes(
                                mode=StartMode.RESET_STACK)
 
 
-async def add_task_dialog_start(start_data, dialog_manager: DialogManager):
-    logger.debug("Объединение стартового и основного словарей диалога")
-    logger.debug("Исходные словари:")
-    logger.debug("start_data: %s", start_data)
-    logger.debug("dialog_manager.dialog_data: %s", dialog_manager.dialog_data)
-
-    dialog_manager.dialog_data.update(start_data)
-
-    logger.debug("Полученный словарь:")
-    logger.debug("dialog_manager.dialog_data: %s", dialog_manager.dialog_data)
+async def select_list(
+        callback: CallbackQuery,
+        _widget: Button,
+        dialog_manager: DialogManager,
+):
+    logger.debug("Установка списка задач...")
+    sub_manager = cast(SubManager, dialog_manager)
+    dialog_manager = sub_manager.manager
+    list_id = sub_manager.item_id
+    logger.debug("Нажата кнопка для item_id=%s", list_id)
+    lists = dialog_manager.dialog_data.get("lists", {})
+    list_title = lists.get(list_id)
+    if not list_title:
+        await callback.answer("Ошибка: список не найден.")
+        return
+    dialog_manager.dialog_data.update({
+        "list_id": list_id,
+        "list_title": list_title,
+    })
+    logger.debug("Словарь dialog_data:")
+    logger.debug(dialog_manager.dialog_data)
+    await callback.answer(f"Выбран список: {list_title}")
+    await dialog_manager.switch_to(state=GetTaskDialogSG.add_task_window)
+    logger.debug(
+        "Установлен список задач id=%s, title=%s",
+        list_id, list_title
+    )
 
 
 async def go_cancel_yes(

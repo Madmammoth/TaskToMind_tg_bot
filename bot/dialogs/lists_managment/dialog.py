@@ -13,7 +13,7 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.text import Const, Format, List
 
 from bot.dialogs.common.getters import get_lists
-from bot.dialogs.common.handlers import go_selected_list, go_pass
+from bot.dialogs.common.handlers import go_pass
 from bot.dialogs.lists_managment.getters import (
     get_new_list,
     get_tasks,
@@ -30,6 +30,7 @@ from bot.dialogs.lists_managment.handlers import (
     go_insert_in_list,
     select_list,
     go_delete_list_yes,
+    go_selected_list,
 )
 from bot.dialogs.start.handlers import empty_text_check
 from bot.dialogs.states import TaskListsDialogSG
