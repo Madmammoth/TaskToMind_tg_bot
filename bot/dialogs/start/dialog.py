@@ -4,7 +4,6 @@ from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Row, Button, Start, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
-from bot.dialogs.common.handlers import go_pass
 from bot.dialogs.start.handlers import (
     go_settings,
     go_features,
@@ -14,7 +13,12 @@ from bot.dialogs.start.handlers import (
     empty_text_check,
     empty_text_input,
 )
-from bot.dialogs.states import StartSG, ForTestsDialogSG, TaskListsDialogSG
+from bot.dialogs.states import (
+    StartSG,
+    ForTestsDialogSG,
+    TaskListsDialogSG,
+    TaskManagementDialogSG,
+)
 
 start_dialog = Dialog(
     Window(
@@ -28,10 +32,10 @@ start_dialog = Dialog(
                 state=StartSG.input_task_window,
                 show_mode=ShowMode.DELETE_AND_SEND
             ),
-            Button(
+            Start(
                 text=Const("Посмотреть задачи"),
                 id="tasks",
-                on_click=go_pass,
+                state=TaskManagementDialogSG.main_tasks_window,
             ),
         ),
         Start(
