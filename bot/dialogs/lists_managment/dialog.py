@@ -218,7 +218,7 @@ lists_management_dialog = Dialog(
             ),
             id="scroll_lists_search",
             width=1,
-            height=5,
+            height=10,
         ),
         SwitchTo(
             text=Const("↩️ Отмена"),
