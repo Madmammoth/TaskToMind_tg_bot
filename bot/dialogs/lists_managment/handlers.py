@@ -11,10 +11,8 @@ from bot.dialogs.states import (
     TaskListsDialogSG,
     TaskSettingsDialogSG,
 )
-from database.requests import (
-    add_list_with_stats_achievs_log,
-    delete_list_with_stats_log,
-)
+from database.services.task_list import add_list_with_stats_achievs_log, \
+    delete_list_with_stats_log
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +101,7 @@ async def go_save_new_list(
         "message_id": None,
         "in_list_id": None,
         "in_list_title": None,
-        "show_lists_mode": "normal",
+        "show_lists_mode": "default",
     })
     await callback.bot.send_message(
         chat_id=callback.message.chat.id,
@@ -137,7 +135,7 @@ async def go_cancel_yes(
         "message_id": None,
         "in_list_id": None,
         "in_list_title": None,
-        "show_lists_mode": "normal",
+        "show_lists_mode": "default",
     })
     await callback.bot.send_message(
         chat_id=callback.message.chat.id,

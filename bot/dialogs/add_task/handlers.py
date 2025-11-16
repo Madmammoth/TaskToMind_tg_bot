@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import StartSG, GetTaskDialogSG
 from database.models import LevelEnum
-from database.requests import add_task_with_stats_achievs_log
+from database.services.task import add_task_with_stats_achievs_log
 from locales.ru import PRIORITY_LABELS, URGENCY_LABELS
 
 logger = logging.getLogger(__name__)

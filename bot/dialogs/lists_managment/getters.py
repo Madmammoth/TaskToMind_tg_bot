@@ -3,10 +3,8 @@ import logging
 from aiogram_dialog import DialogManager
 
 from database.models import User
-from database.requests import (
-    get_user_tasks_in_list,
-    get_user_sub_lists_in_list,
-)
+from database.crud.task_list import get_user_sub_lists_in_list
+from database.crud.task import get_user_tasks_in_list
 
 logger = logging.getLogger(__name__)
 
