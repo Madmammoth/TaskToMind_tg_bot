@@ -59,7 +59,7 @@ def build_ordered_hierarchy(rows: Sequence[Row]) -> list[dict]:
             traverse(sub_list["list_id"], pos)
 
     traverse(None, "")
-    logger.debug("Получено списков: %d, пользователя id=%d", len(rows))
+    logger.debug("Получено списков: %d", len(rows))
     return ordered_lists
 
 
@@ -199,6 +199,7 @@ async def add_list_with_stats_achievs_log(
             user_id=user_id,
             list_id=list_id,
         )
+        return list_id
     except Exception as e:
         logger.exception("Failed to add list: %s", e)
         await log_activity(
