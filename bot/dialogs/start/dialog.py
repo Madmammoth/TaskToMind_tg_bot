@@ -1,35 +1,35 @@
-from aiogram.enums import ContentType
-from aiogram_dialog import Dialog, Window, ShowMode
-from aiogram_dialog.widgets.input import MessageInput, TextInput
-from aiogram_dialog.widgets.kbd import Row, Button, Start, SwitchTo
+from aiogram_dialog import Dialog, ShowMode
+from aiogram_dialog.widgets.kbd import Row, Start, Cancel, Button
 from aiogram_dialog.widgets.text import Const
 
+from bot.dialogs.common.handlers import get_start_data, on_process_result
+from bot.dialogs.components import WindowWithInput, WindowWithoutInput
 from bot.dialogs.start.handlers import (
-    go_settings,
-    go_features,
-    go_support,
-    correct_text_task_input,
-    wrong_text_task_input,
-    empty_text_check,
-    empty_text_input,
+    go_create_task,
+    go_create_list,
+    go_cancel,
+    on_predict_dialog_process_result,
 )
 from bot.dialogs.states import (
     StartSG,
-    ForTestsDialogSG,
+    HelpSG,
+    PredictSG,
+    # ForTestsDialogSG,
     TaskListsDialogSG,
     TaskManagementDialogSG,
+    CreateTaskDialogSG,
 )
 
 start_dialog = Dialog(
-    Window(
+    WindowWithInput(
         Const(
             "Выбери нужный пункт меню:",
         ),
         Row(
-            SwitchTo(
+            Start(
                 text=Const("Добавить задачу"),
-                id="add_task",
-                state=StartSG.input_task_window,
+                id="create_task",
+                state=CreateTaskDialogSG.input_task_window,
                 show_mode=ShowMode.DELETE_AND_SEND
             ),
             Start(
@@ -43,47 +43,69 @@ start_dialog = Dialog(
             id="task_lists_management",
             state=TaskListsDialogSG.main_lists_window,
         ),
-        Row(
-            Button(
-                text=Const("Настройки"),
-                id="settings",
-                on_click=go_settings,
-            ),
-            Button(
-                text=Const("Возможности бота"),
-                id="features",
-                on_click=go_features,
-            ),
-        ),
-        Button(
-            text=Const("Поддержка"),
-            id="support",
-            on_click=go_support,
-        ),
-        Start(
-            text=Const("Тестирование"),
-            id="testing",
-            state=ForTestsDialogSG.test_window,
-        ),
+        # Row(
+        #     Button(
+        #         text=Const("Настройки"),
+        #         id="settings",
+        #         on_click=go_settings,
+        #     ),
+        #     Button(
+        #         text=Const("Возможности бота"),
+        #         id="features",
+        #         on_click=go_features,
+        #     ),
+        # ),
+        # Button(
+        #     text=Const("Поддержка"),
+        #     id="support",
+        #     on_click=go_support,
+        # ),
+        # Start(
+        #     text=Const("Тестирование"),
+        #     id="testing",
+        #     state=ForTestsDialogSG.test_window,
+        # ),
         state=StartSG.start_window,
     ),
-    Window(
-        Const("✍️ Введи текст задачи"),
-        SwitchTo(
-            text=Const("Отмена"),
-            id="cancel",
-            state=StartSG.start_window,
+    on_process_result=on_process_result,
+)
+
+help_dialog = Dialog(
+    WindowWithoutInput(
+        Const(
+            "Я — бот, который со временем "
+            "станет твоим удобным и надёжным планировщиком дел, "
+            "умным каталогизатором всех твоих пересланных сообщений, "
+            "твоей второй памятью и даже — твоим вторым мозгом!\n\n"
+            "Но пока я могу следующее:\n1. Сохранить твою задачу.\n\n"
+            "Нажми кнопку «↩️ Назад», чтобы вернуться в предыдущее меню "
+            "или нажми /start, чтобы перезапустить меня."
         ),
-        TextInput(
-            id="text_task_input",
-            type_factory=empty_text_check,
-            on_success=correct_text_task_input,
-            on_error=empty_text_input,
-        ),
-        MessageInput(
-            func=wrong_text_task_input,
-            content_types=ContentType.ANY,
-        ),
-        state=StartSG.input_task_window,
+        Cancel(Const("↩️ Назад")),
+        state=HelpSG.help_window,
     ),
+)
+
+predict_dialog = Dialog(
+    WindowWithoutInput(
+        Const("Это новая задача или новый список?"),
+        Button(
+            text=Const("Новая задача"),
+            id="new_task",
+            on_click=go_create_task,
+        ),
+        Button(
+            text=Const("Новый список"),
+            id="new_list",
+            on_click=go_create_list,
+        ),
+        Button(
+            text=Const("↩️ Отмена"),
+            id="cancel",
+            on_click=go_cancel,
+        ),
+        state=PredictSG.predict_window,
+    ),
+    on_start=get_start_data,
+    on_process_result=on_predict_dialog_process_result,
 )
