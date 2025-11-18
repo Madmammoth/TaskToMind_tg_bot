@@ -15,7 +15,7 @@ from bot.dialogs.states import (
     HelpSG,
     PredictSG,
     # ForTestsDialogSG,
-    TaskListsDialogSG,
+    ListsManagementDialogSG,
     TaskManagementDialogSG,
     CreateTaskDialogSG,
 )
@@ -41,7 +41,7 @@ start_dialog = Dialog(
         Start(
             text=Const("Управление списками"),
             id="task_lists_management",
-            state=TaskListsDialogSG.main_lists_window,
+            state=ListsManagementDialogSG.main_lists_window,
         ),
         # Row(
         #     Button(

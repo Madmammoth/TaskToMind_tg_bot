@@ -24,7 +24,7 @@ from bot.dialogs.lists_managment.handlers import (
     go_selected_list,
 )
 from bot.dialogs.states import (
-    TaskListsDialogSG,
+    ListsManagementDialogSG,
     CreateListDialogSG,
     CreateTaskDialogSG
 )
@@ -62,7 +62,7 @@ lists_management_dialog = Dialog(
             id="back",
         ),
         getter=get_lists,
-        state=TaskListsDialogSG.main_lists_window,
+        state=ListsManagementDialogSG.main_lists_window,
     ),
     WindowWithInput(
         Const("Список задач:"),
@@ -109,7 +109,7 @@ lists_management_dialog = Dialog(
         SwitchTo(
             text=Const("Удалить список"),
             id="delete_list",
-            state=TaskListsDialogSG.delete_list_window,
+            state=ListsManagementDialogSG.delete_list_window,
             when="is_empty_list"
         ),
         Start(
@@ -120,10 +120,10 @@ lists_management_dialog = Dialog(
         SwitchTo(
             text=Const("🔙 Назад"),
             id="back",
-            state=TaskListsDialogSG.main_lists_window,
+            state=ListsManagementDialogSG.main_lists_window,
         ),
         getter=get_tasks,
-        state=TaskListsDialogSG.list_with_tasks
+        state=ListsManagementDialogSG.list_with_tasks
     ),
     WindowWithoutInput(
         Const("Точно удалить этот список задач:"),
@@ -137,11 +137,11 @@ lists_management_dialog = Dialog(
             SwitchTo(
                 text=Const("↩️ Нет"),
                 id="no",
-                state=TaskListsDialogSG.list_with_tasks
+                state=ListsManagementDialogSG.list_with_tasks
             ),
         ),
         getter=get_list_title_to_delete,
-        state=TaskListsDialogSG.delete_list_window,
+        state=ListsManagementDialogSG.delete_list_window,
     ),
     on_process_result=on_process_result,
 )

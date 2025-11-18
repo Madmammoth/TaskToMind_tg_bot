@@ -40,7 +40,7 @@ class CreateListDialogSG(StatesGroup):
     cancel_window = State()
 
 
-class TaskListsDialogSG(StatesGroup):
+class ListsManagementDialogSG(StatesGroup):
     main_lists_window = State()
     rename_new_list_window = State()
     save_list_window = State()

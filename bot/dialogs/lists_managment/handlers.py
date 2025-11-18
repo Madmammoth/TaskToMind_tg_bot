@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import (
-    TaskListsDialogSG,
+    ListsManagementDialogSG,
     TaskSettingsDialogSG,
 )
 from database.services.task_list import delete_list_with_stats_log
@@ -65,7 +65,7 @@ async def go_selected_list(
     logger.debug(dialog_manager.dialog_data)
     await callback.answer(f"Выбран список: {lists[list_id]}")
     await dialog_manager.switch_to(
-        state=TaskListsDialogSG.list_with_tasks
+        state=ListsManagementDialogSG.list_with_tasks
     )
     logger.debug(
         "Установлен список задач id=%s, title=%s",
@@ -100,6 +100,6 @@ async def go_delete_list_yes(
     text = f"Успешно удалён список задач: {list_title}"
     await callback.message.answer(text=text)
     await dialog_manager.switch_to(
-        state=TaskListsDialogSG.main_lists_window,
+        state=ListsManagementDialogSG.main_lists_window,
         show_mode=ShowMode.DELETE_AND_SEND,
     )
