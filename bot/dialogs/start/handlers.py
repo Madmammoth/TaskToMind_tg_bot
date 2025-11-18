@@ -1,89 +1,59 @@
 import logging
-from typing import Any
 
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager, ShowMode
-from aiogram_dialog.widgets.input import MessageInput, ManagedTextInput
 from aiogram_dialog.widgets.kbd import Button
 
-from bot.dialogs.states import GetTaskDialogSG, StartSG
-from database.models import LevelEnum
-from locales.ru import PRIORITY_LABELS, URGENCY_LABELS
+from bot.dialogs.create_task.handlers import make_default_task_data
+from bot.dialogs.states import CreateTaskDialogSG, CreateListDialogSG
 
 logger = logging.getLogger(__name__)
 
 
-def split_title_and_description(text: str):
-    cleaned = text.strip()
-    if not cleaned:
-        return "Моя задача", None
-    lines = cleaned.split("\n", 1)
-    title = lines[0].strip()
-    description = lines[1].strip() if len(lines) > 1 else None
-    return title, description
-
-
-def make_default_task_data(message_id, task_text) -> dict[str, str | Any]:
-    task_title, task_description = split_title_and_description(task_text)
-    task_data = {
-        "message_id": message_id,
-        "task_title": task_title,
-        "task_description": task_description,
-        "list_title": "Входящие",
-        "priority": LevelEnum.LOW,
-        "priority_label": PRIORITY_LABELS[LevelEnum.LOW],
-        "urgency": LevelEnum.LOW,
-        "urgency_label": URGENCY_LABELS[LevelEnum.LOW],
-        "show_lists_mode": "add_task",
-    }
-    return task_data
-
-
-def empty_text_check(text: str) -> str:
-    if text.strip():
-        return text
-    raise ValueError
-
-
-async def correct_text_task_input(
-        message: Message,
-        _widget: ManagedTextInput,
+async def go_create_task(
+        _callback: CallbackQuery,
+        _widget: Button,
         dialog_manager: DialogManager,
-        _text: str,
 ):
-    logger.debug("Запуск диалога добавления задачи")
-    task_data = make_default_task_data(message.message_id, message.html_text)
+    logger.debug("Переход в диалог создания задачи")
+    message_id = dialog_manager.dialog_data.get("message_id")
+    task_text = dialog_manager.dialog_data.get("text")
+    task_data = make_default_task_data(message_id, task_text)
     await dialog_manager.start(
-        state=GetTaskDialogSG.add_task_window,
+        state=CreateTaskDialogSG.add_task_window,
         data=task_data,
-        show_mode=ShowMode.DELETE_AND_SEND,
     )
 
 
-async def empty_text_input(
-        message: Message,
-        _widget: ManagedTextInput,
-        dialog_manager: DialogManager,
-        _error: ValueError
-):
-    await message.answer("Тут же нет текста 🤔")
-    await dialog_manager.switch_to(
-        state=StartSG.input_task_window,
-        show_mode=ShowMode.DELETE_AND_SEND,
-    )
-
-
-async def wrong_text_task_input(
-        message: Message,
-        _widget: MessageInput,
+async def go_create_list(
+        _callback: CallbackQuery,
+        _widget: Button,
         dialog_manager: DialogManager,
 ):
-    logger.debug("Неправильный ввод текста задачи")
-    await message.answer("Пожалуйста, отправь именно текстовое сообщение!")
-    await dialog_manager.switch_to(
-        state=StartSG.input_task_window,
-        show_mode=ShowMode.DELETE_AND_SEND,
+    logger.debug("Переход в диалог создания списка")
+    message_id = dialog_manager.dialog_data.get("message_id")
+    list_title = dialog_manager.dialog_data.get("text")
+    list_data = {"message_id": message_id, "new_list_title": list_title}
+    logger.debug("list_data=%s", list_data)
+    await dialog_manager.start(
+        state=CreateListDialogSG.add_list_window,
+        data=list_data,
     )
+
+
+async def go_cancel(
+        callback: CallbackQuery,
+        _widget: Button,
+        dialog_manager: DialogManager,
+):
+    logger.debug("Случайное сообщение пользователя")
+    message_id = dialog_manager.dialog_data.get("message_id")
+    await callback.bot.send_message(
+        chat_id=callback.message.chat.id,
+        text="Понял! Буду делать вид, что этого сообщения не было 😉",
+        reply_to_message_id=message_id,
+    )
+    await dialog_manager.done(show_mode=ShowMode.DELETE_AND_SEND)
 
 
 async def go_settings(
@@ -126,3 +96,17 @@ async def go_support(
     await callback.answer(
         "Когда-нибудь тут будет соединение с технической поддержкой"
     )
+
+
+async def on_predict_dialog_process_result(
+        _start_data,
+        result: dict,
+        dialog_manager: DialogManager
+):
+    logger.debug("Выполнение действий при закрытии предыдущего диалога")
+    logger.debug("result=%s", result)
+    if not result:
+        logger.debug("Предыдущий диалог закрыт без возвращения данных")
+        return
+    logger.debug("Возврат к предыдущему диалогу")
+    await dialog_manager.done()
