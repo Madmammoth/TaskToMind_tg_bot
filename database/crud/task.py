@@ -185,18 +185,25 @@ async def get_user_tasks_in_list(
         session: AsyncSession,
         user_id: int,
         list_id: int,
+        mode: str,
 ):
     """
     Запрос задач в списке задач
     :param session: сессия СУБД
     :param user_id: ID пользователя
     :param list_id: ID списка задач
+    :param mode: режим сортировки задач
     :return: список задач
     """
     logger.debug(
         "Запрос задач в списке id=%d пользователя id=%d",
         list_id, user_id,
     )
+
+    rule = Task.updated_at
+    if mode == "default":
+        rule = Task.updated_at.desc()
+
     stmt = (
         select(Task)
         .join(TaskInList)
@@ -209,6 +216,7 @@ async def get_user_tasks_in_list(
                 )
             )
         )
+        .order_by(rule)
     )
 
     result = await session.scalars(stmt)
