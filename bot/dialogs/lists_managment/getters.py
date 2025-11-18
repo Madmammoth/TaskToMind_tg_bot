@@ -2,16 +2,11 @@ import logging
 
 from aiogram_dialog import DialogManager
 
-from database.models import User
-from database.crud.task_list import get_user_sub_lists_in_list
 from database.crud.task import get_user_tasks_in_list
+from database.crud.task_list import get_user_sub_lists_in_list
+from database.models import User
 
 logger = logging.getLogger(__name__)
-
-
-async def get_new_list(dialog_manager: DialogManager, **_kwargs):
-    logger.debug("Апдейт здесь")
-    return dialog_manager.dialog_data
 
 
 async def get_tasks(
@@ -26,7 +21,8 @@ async def get_tasks(
     user_id = event_from_user.id
     list_id = dialog_manager.dialog_data.get("list_id")
     list_title = dialog_manager.dialog_data["lists"][list_id]
-    tasks = await get_user_tasks_in_list(session, user_id, int(list_id))
+    mode = dialog_manager.dialog_data.get("show_tasks_mode", "default")
+    tasks = await get_user_tasks_in_list(session, user_id, int(list_id), mode)
     dialog_manager.dialog_data["tasks"] = {
         task.task_id: task.title for task in tasks
     }
@@ -39,16 +35,16 @@ async def get_tasks(
     dialog_manager.dialog_data["sub_lists"] = sub_lists
     logger.debug("Словарь dialog_data:")
     logger.debug(dialog_manager.dialog_data)
-    buttons_data = [
-        {"task_id": task.task_id, "task_title": task.title}
-        for task in tasks
+    task_buttons = [
+        {"pos": i, "task_id": task.task_id, "task_title": task.title}
+        for i, task in enumerate(tasks, 1)
     ]
     logger.debug("Получившийся список для кнопок:")
-    logger.debug(buttons_data)
+    logger.debug(task_buttons)
     return {
         "list_title": list_title,
         "sub_lists": sub_lists,
-        "tasks": buttons_data,
+        "task_buttons": task_buttons,
         "is_empty_list": not tasks and not sub_lists,
     }
 
