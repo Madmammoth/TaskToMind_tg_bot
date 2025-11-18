@@ -27,7 +27,7 @@ async def add_task_with_stats_achievs_log(
         await update_stats_achievs_on_task_added(session, user_id, task_data)
         await log_activity(
             session,
-            action="add_task",
+            action="create_task",
             success=True,
             user_id=user_id,
             list_id=list_id,
@@ -37,7 +37,7 @@ async def add_task_with_stats_achievs_log(
         logger.exception("Failed to add task: %s", e)
         await log_activity(
             session,
-            action="add_task",
+            action="create_task",
             success=False,
             user_id=user_id,
         )

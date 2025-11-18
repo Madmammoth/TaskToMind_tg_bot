@@ -72,8 +72,8 @@ async def fetch_user_lists_raw(
                 [SystemListTypeEnum.INBOX, SystemListTypeEnum.ARCHIVE]
             )
         )
-    elif mode == "add_task":
-        logger.debug("show_lists_mode=add_task")
+    elif mode == "create_task":
+        logger.debug("show_lists_mode=create_task")
         stmt = stmt.where(TaskList.system_type != SystemListTypeEnum.ARCHIVE)
 
     rows = (await session.execute(stmt)).all()
