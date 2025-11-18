@@ -10,7 +10,7 @@ from aiogram_dialog.widgets.text import Const, Format
 
 from bot.dialogs.common.handlers import on_process_result
 from bot.dialogs.components import WindowWithInput
-from bot.dialogs.states import TaskManagementDialogSG, CreateTaskDialogSG
+from bot.dialogs.states import TasksManagementDialogSG, CreateTaskDialogSG
 from bot.dialogs.tasks_management.getters import get_all_tasks
 from bot.dialogs.tasks_management.handlers import go_selected_task
 
@@ -43,7 +43,7 @@ tasks_management_dialog = Dialog(
             id="back",
         ),
         getter=get_all_tasks,
-        state=TaskManagementDialogSG.main_tasks_window,
+        state=TasksManagementDialogSG.main_tasks_window,
     ),
     on_process_result=on_process_result,
 )

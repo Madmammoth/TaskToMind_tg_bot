@@ -29,7 +29,7 @@ class TaskSettingsDialogSG(StatesGroup):
     main_task_window = State()
 
 
-class TaskManagementDialogSG(StatesGroup):
+class TasksManagementDialogSG(StatesGroup):
     main_tasks_window = State()
 
 

@@ -16,7 +16,7 @@ from bot.dialogs.states import (
     PredictSG,
     # ForTestsDialogSG,
     ListsManagementDialogSG,
-    TaskManagementDialogSG,
+    TasksManagementDialogSG,
     CreateTaskDialogSG,
 )
 
@@ -35,7 +35,7 @@ start_dialog = Dialog(
             Start(
                 text=Const("Посмотреть задачи"),
                 id="tasks",
-                state=TaskManagementDialogSG.main_tasks_window,
+                state=TasksManagementDialogSG.main_tasks_window,
             ),
         ),
         Start(
