@@ -11,4 +11,6 @@ others_router = Router()
 @others_router.message()
 async def other_msgs_process(message: Message):
     logger.debug("Апдейт здесь")
-    await message.reply("Я даже не знаю, что с этим делать 🤔")
+    await message.reply(
+        "Упс! Как ты вообще здесь оказался?!\n\n Попробуй нажать /start"
+    )
