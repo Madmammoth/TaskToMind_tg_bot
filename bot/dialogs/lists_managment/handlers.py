@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import (
     ListsManagementDialogSG,
-    TaskSettingsDialogSG,
+    TaskActionsDialogSG,
 )
 from database.services.task_list import delete_list_with_stats_log
 
@@ -40,7 +40,7 @@ async def go_selected_task(
     }
     await callback.answer(f"Выбрана задача: {task_title}")
     await dialog_manager.start(
-        state=TaskSettingsDialogSG.main_task_window,
+        state=TaskActionsDialogSG.main_task_window,
         data=data
     )
     logger.debug(

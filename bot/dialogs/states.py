@@ -25,7 +25,7 @@ class CreateTaskDialogSG(StatesGroup):
     cancel_window = State()
 
 
-class TaskSettingsDialogSG(StatesGroup):
+class TaskActionsDialogSG(StatesGroup):
     main_task_window = State()
 
 

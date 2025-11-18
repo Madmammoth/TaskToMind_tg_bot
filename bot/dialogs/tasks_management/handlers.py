@@ -5,7 +5,7 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager, SubManager
 from aiogram_dialog.widgets.kbd import Button
 
-from bot.dialogs.states import TaskSettingsDialogSG
+from bot.dialogs.states import TaskActionsDialogSG
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ async def go_selected_task(
     data = {}
     await callback.answer(f"Выбрана задача: {task_title}")
     await dialog_manager.start(
-        state=TaskSettingsDialogSG.main_task_window,
+        state=TaskActionsDialogSG.main_task_window,
         data=data,
     )
     logger.debug(
