@@ -1,14 +1,21 @@
-from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.kbd import ScrollingGroup, ListGroup, Button, \
-    Cancel, Start
+from aiogram_dialog import Dialog
+from aiogram_dialog.widgets.kbd import (
+    Button,
+    Cancel,
+    ListGroup,
+    ScrollingGroup,
+    Start,
+)
 from aiogram_dialog.widgets.text import Const, Format
 
-from bot.dialogs.states import TaskManagementDialogSG, GetTaskDialogSG
+from bot.dialogs.common.handlers import on_process_result
+from bot.dialogs.components import WindowWithInput
+from bot.dialogs.states import TaskManagementDialogSG, CreateTaskDialogSG
 from bot.dialogs.tasks_management.getters import get_all_tasks
 from bot.dialogs.tasks_management.handlers import go_selected_task
 
 tasks_management_dialog = Dialog(
-    Window(
+    WindowWithInput(
         Const("Показаны все задачи в порядке"),
         Const("от последних к более ранним", when="time_back"),
         ScrollingGroup(
@@ -29,7 +36,7 @@ tasks_management_dialog = Dialog(
         Start(
             text=Const("➕ Новая задача"),
             id="create_task",
-            state=GetTaskDialogSG.add_task_window,
+            state=CreateTaskDialogSG.input_task_window,
         ),
         Cancel(
             text=Const("🔙 Назад"),
@@ -38,4 +45,5 @@ tasks_management_dialog = Dialog(
         getter=get_all_tasks,
         state=TaskManagementDialogSG.main_tasks_window,
     ),
+    on_process_result=on_process_result,
 )
