@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import select, update, and_, exists
+from sqlalchemy import select, update, and_, exists, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import (
@@ -51,92 +51,102 @@ async def mark_task_in_process(
     await session.commit()
 
 
-async def db_add_task(
+def make_list_query_by_list_id(
+        user_id: int,
+        list_id: int,
+):
+    logger.debug(
+        "Составление для пользователя id=%d запроса списка id=%d",
+        user_id, list_id,
+    )
+    list_query = (
+        select(TaskList)
+        .join(ListAccess)
+        .where(
+            TaskList.list_id == list_id,
+            ListAccess.user_id == user_id,
+            ListAccess.role.in_([
+                AccessRoleEnum.OWNER,
+                AccessRoleEnum.EDITOR,
+            ]),
+        )
+    )
+    return list_query
+
+
+def make_list_query_by_list_title(
+        user_id: int,
+        list_title: str,
+):
+    logger.debug(
+        "Составление для пользователя id=%d запроса списка «%s»",
+        user_id, list_title,
+    )
+    list_query = (
+        select(TaskList)
+        .join(ListAccess)
+        .where(
+            TaskList.title == list_title,
+            ListAccess.user_id == user_id,
+            ListAccess.role.in_([
+                AccessRoleEnum.OWNER,
+                AccessRoleEnum.EDITOR,
+            ]),
+        )
+    )
+    return list_query
+
+
+async def create_task(
+        session: AsyncSession,
+        task_data: dict,
+) -> Task:
+    task = Task(
+        title=task_data["task_title"],
+        description=task_data["task_description"],
+        message_id=task_data.get("message_id"),
+        priority=task_data.get("priority"),
+        urgency=task_data.get("urgency"),
+        status=TaskStatusEnum.NEW,
+        parent_task_id=task_data.get("parent_task_id"),
+        deadline=task_data.get("deadline"),
+        is_recurring=task_data.get("is_recurring", False),
+        recurrence_rule_id=task_data.get("recurrence_rule_id"),
+        duration=task_data.get("duration"),
+        remind=task_data.get("remind", False),
+    )
+    session.add(task)
+    await session.flush()
+
+    return task
+
+
+def create_list_task_link(
+        session: AsyncSession,
+        list_id: int,
+        task_id: int,
+):
+    session.add(
+        TaskInList(
+            list_id=list_id,
+            task_id=task_id,
+        )
+    )
+
+
+def create_task_access(
         session: AsyncSession,
         user_id: int,
-        task_data: dict,
+        task_id: int,
 ):
-    """
-    Добавление задачи пользователем
-    :param session: сессия СУБД
-    :param user_id: ID пользователя
-    :param task_data: настройки задачи
-    """
-    try:
-        if "list_id" in task_data:
-            list_query = (
-                select(TaskList)
-                .join(ListAccess)
-                .where(
-                    TaskList.list_id == int(task_data["list_id"]),
-                    ListAccess.user_id == user_id,
-                    ListAccess.role.in_([
-                        AccessRoleEnum.OWNER,
-                        AccessRoleEnum.EDITOR,
-                    ]),
-                )
-            )
-        else:
-            list_title = task_data.get("list_title", "Входящие")
-            list_query = (
-                select(TaskList)
-                .join(ListAccess)
-                .where(
-                    TaskList.title == list_title,
-                    ListAccess.user_id == user_id,
-                    ListAccess.role.in_([
-                        AccessRoleEnum.OWNER,
-                        AccessRoleEnum.EDITOR,
-                    ]),
-                )
-            )
-        task_list = (await session.execute(list_query)).scalar_one_or_none()
-        if not task_list:
-            raise ValueError("Список не найден или недоступен пользователю")
-
-        task = Task(
-            title=task_data["task_title"],
-            description=task_data["task_description"],
-            message_id=task_data.get("message_id"),
-            priority=task_data.get("priority"),
-            urgency=task_data.get("urgency"),
-            status=TaskStatusEnum.NEW,
-            parent_task_id=task_data.get("parent_task_id"),
-            deadline=task_data.get("deadline"),
-            is_recurring=task_data.get("is_recurring", False),
-            recurrence_rule_id=task_data.get("recurrence_rule_id"),
-            duration=task_data.get("duration"),
-            remind=task_data.get("remind", False),
+    session.add(
+        TaskAccess(
+            task_id=task_id,
+            user_id=user_id,
+            role=AccessRoleEnum.OWNER,
+            granted_by=user_id,
         )
-        session.add(task)
-        await session.flush()
-
-        session.add(
-            TaskInList(
-                list_id=task_list.list_id,
-                task_id=task.task_id,
-            )
-        )
-
-        session.add(
-            TaskAccess(
-                task_id=task.task_id,
-                user_id=user_id,
-                role=AccessRoleEnum.OWNER,
-                granted_by=user_id,
-            )
-        )
-        logger.debug(
-            "Задача id=%d пользователя id=%d добавлена",
-            task.task_id, user_id,
-        )
-        await session.commit()
-    except Exception as e:
-        await session.rollback()
-        logger.exception("Ошибка в db_add_task для пользователя "
-                         f"{user_id}: {e}")
-        raise
-    return task_list.list_id, task.task_id
+    )
 
 
 async def get_user_tasks(
@@ -230,3 +240,21 @@ async def get_user_tasks_in_list(
         len(tasks), list_id, user_id,
     )
     return tasks
+
+
+async def complete_task(
+        session: AsyncSession,
+        user_id: int,
+        task_id: int,
+):
+    logger.debug(
+        "Установка у задачи id=%d пользователя id=%d статуса «Выполнена»",
+        task_id, user_id,
+    )
+    stmt = update(Task).where(Task.task_id == task_id).values(
+        status=TaskStatusEnum.DONE,
+        completed_at=func.now(),
+        updated_at=func.now(),
+    )
+    await session.execute(stmt)
+    logger.debug("Задача id=%d пользователя id=%d выполнена")
