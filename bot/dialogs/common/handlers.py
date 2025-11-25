@@ -11,7 +11,7 @@ async def get_start_data(
         start_data: dict,
         dialog_manager: DialogManager,
 ):
-    logger.debug("Апдейт здесь")
+    logger.debug("Передача в новый диалог start_data=%s", start_data)
     if start_data is None:
         start_data = {}
     dialog_manager.dialog_data.update(start_data)
@@ -35,7 +35,4 @@ async def on_process_result(
     logger.debug("result=%s", result)
     if not result:
         return
-    if "return_to" in result:
-        state = result.pop("return_to")
-        await dialog_manager.switch_to(state)
     dialog_manager.dialog_data.update(result)
