@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import func
+from sqlalchemy import func, update
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -64,3 +64,120 @@ async def update_stats_on_list_deleted(
             user_id, e,
         )
         raise
+
+
+def make_updates_on_conflict(model, stmt, updates: dict):
+    return {
+        key: getattr(model, key) + stmt.excluded[key]
+        for key in updates.keys()
+    }
+
+
+async def upsert_user_stats_on_task_completed(
+        session: AsyncSession,
+        user_id: int,
+        updates: dict,
+):
+    logger.debug(
+        "Обновление при выполнении задачи "
+        "статистики (updates=%s) пользователя id=%d",
+        list(updates.keys()), user_id,
+    )
+    stmt = upsert(UserStats).values({"user_id": user_id, **updates})
+    updates_on_conflict = make_updates_on_conflict(UserStats, stmt, updates)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["user_id"],
+        set_={
+            **updates_on_conflict,
+            "updated_at": func.now(),
+        }
+    ).returning(UserStats)
+    result = await session.execute(stmt)
+    logger.debug("Обновлена статистика пользователя id=%d", user_id)
+    return result.scalar_one()
+
+
+async def get_user_stats(
+        session: AsyncSession,
+        user_id: int,
+):
+    logger.debug("Получение статистики пользователя id=%d", user_id)
+    user_stats = await session.get(UserStats, user_id)
+    return user_stats
+
+
+def make_rollback_updates(model, categories):
+    return {
+        category: getattr(model, category) - 1
+        for category in categories
+    }
+
+
+async def update_user_stats_on_task_uncompleted(
+        session: AsyncSession,
+        user_id: int,
+        categories: list,
+):
+    logger.debug(
+        "Обновление при возвращении задачи в работу "
+        "статистики (categories=%s) пользователя id=%d",
+        categories, user_id,
+    )
+    back_updates = make_rollback_updates(UserStats, categories)
+    stmt = (
+        update(UserStats)
+        .where(UserStats.user_id == user_id)
+        .values({
+            **back_updates,
+            "updated_at": func.now(),
+        }).returning(UserStats))
+    result = await session.execute(stmt)
+    logger.debug("Обновлена статистика пользователя id=%d", user_id)
+    return result.scalar_one()
+
+
+async def upsert_user_stats_on_task_canceled(
+        session: AsyncSession,
+        user_id: int,
+        updates: dict,
+):
+    logger.debug(
+        "Обновление при отмене задачи "
+        "статистики (updates=%s) пользователя id=%d",
+        updates, user_id,
+    )
+    stmt = upsert(UserStats).values({"user_id": user_id, **updates})
+    updates_on_conflict = make_updates_on_conflict(UserStats, stmt, updates)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["user_id"],
+        set_={
+            **updates_on_conflict,
+            "updated_at": func.now(),
+        }
+    ).returning(UserStats)
+    result = await session.execute(stmt)
+    logger.debug("Обновлена статистика пользователя id=%d", user_id)
+    return result.scalar_one()
+
+
+async def update_user_stats_on_task_uncanceled(
+        session: AsyncSession,
+        user_id: int,
+        categories: list,
+):
+    logger.debug(
+        "Обновление при смене статуса задачи с «Отменена» на «В работе» "
+        "статистики (categories=%s) пользователя id=%d",
+        categories, user_id,
+    )
+    back_updates = make_rollback_updates(UserStats, categories)
+    stmt = (
+        update(UserStats)
+        .where(UserStats.user_id == user_id)
+        .values({
+            **back_updates,
+            "updated_at": func.now(),
+        }).returning(UserStats))
+    result = await session.execute(stmt)
+    logger.debug("Обновлена статистика пользователя id=%d", user_id)
+    return result.scalar_one()
