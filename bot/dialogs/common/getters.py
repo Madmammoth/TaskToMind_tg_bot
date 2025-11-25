@@ -4,6 +4,15 @@ from bot.dialogs.lists_managment.getters import logger
 from database.models import User
 from database.services.task_list import build_ordered_hierarchy
 from database.crud.task_list import fetch_user_lists_raw
+from utils.serialization import from_dialog_safe
+
+
+async def get_dialog_data(
+        dialog_manager: DialogManager,
+        **_kwargs
+):
+    logger.debug("Получение словаря из dialog_data")
+    return from_dialog_safe(dialog_manager.dialog_data)
 
 
 async def get_lists(
