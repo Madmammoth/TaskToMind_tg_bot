@@ -27,6 +27,21 @@ class CreateTaskDialogSG(StatesGroup):
 
 class TaskActionsDialogSG(StatesGroup):
     main_task_window = State()
+    main_task_window_2 = State()
+    share_task_window = State()
+    checklist_window = State()
+    complete_task_window = State()
+    not_complete_task_window = State()
+    cancel_task_window = State()
+    not_cancel_task_window = State()
+    select_list_window = State()
+    task_priority_window = State()
+    task_urgency_window = State()
+    repeat_task_window = State()
+    task_remind_window = State()
+    task_duration_window = State()
+    task_deadline_window = State()
+    task_recurrence_window = State()
 
 
 class TasksManagementDialogSG(StatesGroup):
