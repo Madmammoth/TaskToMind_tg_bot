@@ -1,4 +1,3 @@
-import json
 from enum import Enum
 
 
@@ -25,42 +24,16 @@ class TaskStatusEnum(Enum):
     NEW = "new"
     IN_PROGRESS = "in_progress"
     DONE = "done"
-    CANCELLED = "cancelled"
+    CANCELED = "canceled"
 
 
 class ReminderStatusEnum(Enum):
     PENDING = "pending"
     SENT = "sent"
-    CANCELLED = "cancelled"
+    CANCELED = "canceled"
 
 
 class AccessRoleEnum(Enum):
     OWNER = "owner"
     EDITOR = "editor"
     VIEWER = "viewer"
-
-
-ENUM_MAP = {
-    "GenderEnum": GenderEnum,
-    "SystemListTypeEnum": SystemListTypeEnum,
-    "LevelEnum": LevelEnum,
-    "TaskStatusEnum": TaskStatusEnum,
-    "ReminderStatusEnum": ReminderStatusEnum,
-    "AccessRoleEnum": AccessRoleEnum,
-}
-
-
-class EnumEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Enum):
-            return {"__enum__": f"{obj.__class__.__name__}.{obj.name}"}
-        return super().default(obj)
-
-
-def enum_decoder(data):
-    if "__enum__" in data:
-        name, member = data["__enum__"].split(".")
-        enum_cls = ENUM_MAP.get(name)
-        if enum_cls:
-            return enum_cls[member]
-    return data
