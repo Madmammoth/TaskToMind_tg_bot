@@ -1,6 +1,5 @@
 import logging
 from collections import defaultdict
-from datetime import datetime, timezone
 from typing import Any, Sequence
 
 from sqlalchemy import Row
@@ -9,10 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.crud.achievement import (
     get_achievements_by_categories,
     get_user_achievements,
-    upsert_user_achievements
+    upsert_user_achievements,
+    get_user_achievements_updates
 )
-from database.crud.stats import upsert_user_stats_on_list_added, \
-    update_stats_on_list_deleted
+from database.crud.stats import (
+    upsert_user_stats_on_list_added,
+    update_stats_on_list_deleted,
+)
 from database.crud.task_list import (
     create_list_access,
     get_max_position,
@@ -134,30 +136,9 @@ async def update_stats_achievs_on_list_added(
         achievements = await get_achievements_by_categories(session,
                                                             categories)
         user_achievements = await get_user_achievements(session, user_id)
-        updates = []
-        for achievement in achievements:
-            prev_ach = achievement.previous_achievement_id
-            if prev_ach and (not user_achievements[prev_ach]
-                             or not user_achievements[prev_ach].is_completed):
-                logger.debug(
-                    "Пропуск достижения id=%d, т.к. для него требуется "
-                    "выполнение предыдущего достижения id=%d",
-                    achievement.achievement_id, prev_ach,
-                )
-                continue
-
-            current_value = getattr(user_stats, achievement.category, 0)
-            is_completed = current_value >= achievement.required_count
-
-            updates.append({
-                "user_id": user_id,
-                "achievement_id": achievement.achievement_id,
-                "progress": current_value,
-                "is_completed": is_completed,
-                "unlocked_at": (datetime.now(timezone.utc)
-                                if is_completed else None),
-            })
-
+        updates = get_user_achievements_updates(
+            user_id, achievements, user_achievements, user_stats
+        )
         if updates:
             await upsert_user_achievements(session, user_id, updates)
 
