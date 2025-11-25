@@ -78,7 +78,7 @@ create_task_dialog = Dialog(
             ),
             Next(
                 text=Const("Дополнительные настройки"),
-                id="check_list",
+                id="extra_settings",
             ),
             SwitchTo(
                 text=Const("Отмена"),
