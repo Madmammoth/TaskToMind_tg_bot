@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.dialogs.states import CreateListDialogSG, StartSG
+from bot.dialogs.states import CreateListDialogSG
 from database.services.task_list import add_list_with_stats_achievs_log
 
 logger = logging.getLogger(__name__)
