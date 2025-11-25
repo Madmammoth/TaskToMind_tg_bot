@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import os
 import sys
@@ -19,7 +18,6 @@ from bot.handlers.others import others_router
 from bot.middlewares.last_active import LastActiveMiddleware
 from config_data.config import Config, load_config
 from database.middlewares.db_session import DbSessionMiddleware
-from database.models.enums import EnumEncoder, enum_decoder
 
 config: Config = load_config()
 
@@ -57,8 +55,6 @@ async def main():
     storage = RedisStorage(
         redis=redis_client,
         key_builder=key_builder,
-        json_dumps=lambda data: json.dumps(data, cls=EnumEncoder),
-        json_loads=lambda data: json.loads(data, object_hook=enum_decoder),
     )
     dp = Dispatcher(storage=storage)
     logger.info("Including routers...")
