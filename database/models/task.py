@@ -16,8 +16,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, make_timestamp_mixin
 from .enums import TaskStatusEnum, LevelEnum, AccessRoleEnum
-from .tracking import Reminder, ActivityLog, RecurrenceRule
 from .tag import TaskTag
+from .tracking import Reminder, ActivityLog, RecurrenceRule
 
 
 class Task(Base, make_timestamp_mixin()):
@@ -25,8 +25,8 @@ class Task(Base, make_timestamp_mixin()):
     __table_args__ = (
         CheckConstraint("completed_at IS NULL OR completed_at >= created_at",
                         name="chk_complete_after_created"),
-        CheckConstraint("cancelled_at IS NULL OR cancelled_at >= created_at",
-                        name="chk_cancelled_after_created"),
+        CheckConstraint("canceled_at IS NULL OR canceled_at >= created_at",
+                        name="chk_canceled_after_created"),
     )
 
     task_id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -56,7 +56,7 @@ class Task(Base, make_timestamp_mixin()):
     completed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    cancelled_at: Mapped[datetime] = mapped_column(
+    canceled_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     postponed_count: Mapped[int | None] = mapped_column(
