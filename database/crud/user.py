@@ -1,5 +1,6 @@
 import logging
 
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,3 +49,13 @@ def assign_default_tags(
         UserTag(user_id=telegram_id, tag_id=tag_id)
         for tag_id in range(1, 14)
     ])
+
+
+async def get_user_timezone(
+        session: AsyncSession,
+        user_id: int,
+):
+    stmt = select(User.timezone_name).where(User.telegram_id == user_id)
+    result = await session.execute(stmt)
+    timezone = result.scalar_one()
+    return timezone
