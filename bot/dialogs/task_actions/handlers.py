@@ -5,7 +5,7 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot.dialogs.states import TaskActionsDialogSG
+from bot.dialogs.states import TaskActionsDialogSG, SelectListDialogSG
 from database.orchestration.task import (
     complete_task_with_stats_achievs_log,
     not_complete_task_with_stats_achievs_log,
@@ -146,6 +146,30 @@ async def go_not_cancel_yes(
     await dialog_manager.switch_to(
         state=TaskActionsDialogSG.main_task_window,
         show_mode=ShowMode.DELETE_AND_SEND,
+    )
+
+
+async def select_list(
+        callback: CallbackQuery,
+        _widget: Button,
+        dialog_manager: DialogManager,
+):
+    user_id = callback.from_user.id
+    logger.debug(
+        "Переход пользователя id=%d к выбору списка из редактирования задачи",
+        user_id
+    )
+    task_id = dialog_manager.dialog_data.get("task_id")
+    selected_list_id = dialog_manager.dialog_data.get("selected_list_id")
+    data = {
+        "mode": "task_action",
+        "task_id": task_id,
+        "selected_list_id": selected_list_id,
+    }
+    logger.debug("task_id=%d, selected_list_id=%d", task_id, selected_list_id)
+    await dialog_manager.start(
+        state=SelectListDialogSG.select_list_window,
+        data=data,
     )
 
 

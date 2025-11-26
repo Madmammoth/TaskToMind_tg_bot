@@ -279,3 +279,47 @@ async def not_cancel_task_with_stats_achievs_log(
             old_value=task_data.get("status"),
             new_value=task_data.get("status"),
         )
+
+
+async def change_list_for_task_with_log(
+        session: AsyncSession,
+        user_id: int,
+        task_id: int,
+        old_list_id: int,
+        new_list_id: int,
+):
+    logger.debug(
+        "Обновление базы данны при изменении для пользователя id=%d "
+        "у задачи id=%d списка с id=%d на id=%d",
+        user_id, task_id, old_list_id, new_list_id
+    )
+    try:
+        await change_list_for_task(session, task_id, old_list_id, new_list_id)
+        await log_activity(
+            session,
+            action="change_list_for_task",
+            success=True,
+            user_id=user_id,
+            task_id=task_id,
+            old_value=old_list_id,
+            new_value=new_list_id,
+        )
+        logger.debug(
+            "Обновлена база данных при изменении для пользователя id=%d "
+            "у задачи id=%d списка с id=%d на id=%d",
+            user_id, task_id, old_list_id, new_list_id
+        )
+    except Exception as e:
+        logger.exception(
+            "Ошибка при обновлении базы данных при изменении для "
+            "пользователя id=%d у задачи id=%d списка с id=%d на id=%d: %s",
+            user_id, task_id, old_list_id, new_list_id, e
+        )
+        await log_activity(
+            session,
+            action="change_list_for_task",
+            success=False,
+            user_id=user_id,
+            task_id=task_id,
+            list_id=old_list_id,
+        )

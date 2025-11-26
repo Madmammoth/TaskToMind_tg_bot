@@ -68,6 +68,10 @@ class ListsManagementDialogSG(StatesGroup):
     change_view_window = State()
 
 
+class SelectListDialogSG(StatesGroup):
+    select_list_window = State()
+
+
 class ChangeSettingsDialogSG(StatesGroup):
     settings_window = State()
 

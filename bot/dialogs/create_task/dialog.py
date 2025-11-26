@@ -6,23 +6,19 @@ from aiogram_dialog.widgets.kbd import (
     Button,
     Cancel,
     Column,
-    ListGroup,
     Next,
     Row,
-    ScrollingGroup,
     Start,
     SwitchTo,
 )
 from aiogram_dialog.widgets.text import Format, Const
 
-from bot.dialogs.common.getters import get_lists
 from bot.dialogs.common.handlers import get_start_data
 from bot.dialogs.components import WindowWithoutInput
 from bot.dialogs.create_task.getters import get_task
 from bot.dialogs.create_task.handlers import (
     go_priority,
     go_urgency,
-    select_list,
     go_cancel_yes,
     go_save_yes,
     empty_text_check,
@@ -31,7 +27,7 @@ from bot.dialogs.create_task.handlers import (
     wrong_text_task_input,
     update_data,
 )
-from bot.dialogs.states import CreateTaskDialogSG, CreateListDialogSG
+from bot.dialogs.states import CreateTaskDialogSG, SelectListDialogSG
 
 create_task_dialog = Dialog(
     Window(
@@ -52,7 +48,7 @@ create_task_dialog = Dialog(
     WindowWithoutInput(
         Format("{task_title}"),
         Format("{task_description}", when="task_description"),
-        Format("\nСписок: {list_title}"),
+        Format("\nСписок: {selected_list_title}"),
         Format("Приоритет: {priority_label}"),
         Format("Срочность: {urgency_label}"),
         Column(
@@ -61,10 +57,11 @@ create_task_dialog = Dialog(
                 id="save",
                 state=CreateTaskDialogSG.save_task_window
             ),
-            SwitchTo(
+            Start(
                 text=Const("Список"),
-                id="list_title",
-                state=CreateTaskDialogSG.select_list_window
+                id="select_list",
+                state=SelectListDialogSG.select_list_window,
+                data={"mode": "create_task"}
             ),
             SwitchTo(
                 text=Const("Приоритет"),
@@ -92,7 +89,7 @@ create_task_dialog = Dialog(
     WindowWithoutInput(
         Format("{task_title}"),
         Format("{task_description}", when="task_description"),
-        Format("\nСписок: {list_title}"),
+        Format("\nСписок: {selected_list_title}"),
         Format("Приоритет: {priority_label}"),
         Format("Срочность: {urgency_label}"),
         Column(
@@ -145,37 +142,6 @@ create_task_dialog = Dialog(
         ),
         getter=get_task,
         state=CreateTaskDialogSG.add_task_window_2
-    ),
-    WindowWithoutInput(
-        Const("Выбери нужный список:\n"),
-        ScrollingGroup(
-            ListGroup(
-                Button(
-                    Format("{item[pos]} {item[list_title]}"),
-                    id="selected_list",
-                    on_click=select_list,
-                ),
-                id="lists_search",
-                item_id_getter=lambda item: item["list_id"],
-                items="lists"
-            ),
-            id="scroll_lists_search",
-            width=1,
-            height=10,
-        ),
-        Start(
-            text=Const("➕ Новый список"),
-            id="new_list",
-            state=CreateListDialogSG.input_list_title_window,
-            data={"return_to": "CreateTaskDialogSG.add_task_window"}
-        ),
-        SwitchTo(
-            text=Const("🔙 Назад"),
-            id="back",
-            state=CreateTaskDialogSG.add_task_window,
-        ),
-        getter=get_lists,
-        state=CreateTaskDialogSG.select_list_window
     ),
     WindowWithoutInput(
         Const("Текущий приоритет задачи:\n"),
@@ -260,7 +226,7 @@ create_task_dialog = Dialog(
         Format("{task_title}"),
         Format("{task_description}", when="task_description"),
         Const("\nбудет сохранена со следующими параметрами:"),
-        Format("\nСписок: {list_title}"),
+        Format("\nСписок: {selected_list_title}"),
         Format("Приоритет: {priority_label}"),
         Format("Срочность: {urgency_label}"),
         Format("Срок завершения: {deadline}", when="deadline_show"),
