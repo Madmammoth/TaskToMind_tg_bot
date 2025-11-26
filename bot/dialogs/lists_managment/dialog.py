@@ -74,7 +74,7 @@ lists_management_dialog = Dialog(
             when="sub_lists",
         ),
         Const("\nЗадачи:"),
-        Const("<i>в этом списке пока нет задач</i>", when=~F["tasks"]),
+        Const("<i>в этом списке пока нет задач</i>", when=~F["task_buttons"]),
         ScrollingGroup(
             ListGroup(
                 Button(
