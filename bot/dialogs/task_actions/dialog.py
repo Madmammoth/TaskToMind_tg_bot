@@ -1,7 +1,14 @@
 from aiogram import F
 from aiogram_dialog import Dialog, StartMode
-from aiogram_dialog.widgets.kbd import Cancel, SwitchTo, Next, Back, Row, \
-    Button, Start
+from aiogram_dialog.widgets.kbd import (
+    Back,
+    Button,
+    Cancel,
+    Next,
+    Row,
+    Start,
+    SwitchTo,
+)
 from aiogram_dialog.widgets.text import Format, Const, List
 
 from bot.dialogs.common.getters import get_dialog_data
@@ -9,8 +16,13 @@ from bot.dialogs.common.handlers import get_start_data
 from bot.dialogs.components import WindowWithInput, WindowWithoutInput
 from bot.dialogs.states import TaskActionsDialogSG, StartSG
 from bot.dialogs.task_actions.getters import get_task
-from bot.dialogs.task_actions.handlers import go_complete_yes, postpone, \
-    go_not_complete_yes, go_cancel_yes, go_not_cancel_yes
+from bot.dialogs.task_actions.handlers import (
+    go_complete_yes,
+    postpone,
+    go_not_complete_yes,
+    go_cancel_yes,
+    go_not_cancel_yes,
+)
 
 task_actions_dialog = Dialog(
     WindowWithInput(
@@ -62,12 +74,12 @@ task_actions_dialog = Dialog(
             text="{recurrence_rule_text}",
             when=F["is_recurring"] & ~F["canceled_at"],
         ),
-        SwitchTo(
-            text=Const("Поделиться"),
-            id="share_task",
-            state=TaskActionsDialogSG.share_task_window,
-            when=~F["is_shared"] & ~F["completed_at"] & ~F["canceled_at"],
-        ),
+        # SwitchTo(
+        #     text=Const("Поделиться"),
+        #     id="share_task",
+        #     state=TaskActionsDialogSG.share_task_window,
+        #     when=~F["is_shared"] & ~F["completed_at"] & ~F["canceled_at"],
+        # ),
         SwitchTo(
             text=Const("Чек-лист"),
             id="checklist",
