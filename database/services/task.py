@@ -59,11 +59,14 @@ async def db_add_task(
         user_id,
     )
     try:
-        if "list_id" in task_data:
-            list_id = int(task_data["list_id"])
+        if "selected_list_id" in task_data:
+            logger.debug("Формирование запроса списка через id")
+            list_id = task_data["selected_list_id"]
             list_query = make_list_query_by_list_id(user_id, list_id)
         else:
-            list_title = task_data.get("list_title", "Входящие")
+            logger.debug("Формирование запроса списка через наименование...")
+            list_title = task_data.get("selected_list_title", "Входящие")
+            logger.debug("...«%s»", list_title)
             list_query = make_list_query_by_list_title(user_id, list_title)
         task_list = (await session.execute(list_query)).scalar_one_or_none()
         if not task_list:
@@ -172,8 +175,8 @@ def make_task_data_for_dialog(
         "recurrence_rule_text": "",
         "duration": task.duration,
         "remind": task.remind,
-        "list_id": task_list.list_id,
-        "list_title": task_list.title,
+        "selected_list_id": task_list.list_id,
+        "selected_list_title": task_list.title,
         "role": ACCESS_LABELS.get(access.role).capitalize(),
         "has_checklist": False,
     }

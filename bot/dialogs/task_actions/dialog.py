@@ -12,7 +12,7 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.text import Format, Const, List
 
 from bot.dialogs.common.getters import get_dialog_data
-from bot.dialogs.common.handlers import get_start_data
+from bot.dialogs.common.handlers import get_start_data, on_process_result
 from bot.dialogs.components import WindowWithInput, WindowWithoutInput
 from bot.dialogs.states import TaskActionsDialogSG, StartSG
 from bot.dialogs.task_actions.getters import get_task
@@ -22,13 +22,14 @@ from bot.dialogs.task_actions.handlers import (
     go_not_complete_yes,
     go_cancel_yes,
     go_not_cancel_yes,
+    select_list,
 )
 
 task_actions_dialog = Dialog(
     WindowWithInput(
         Format("{task_title}"),
         Format("{description}", when="description"),
-        Format("\nВ списке: {list_title}"),
+        Format("\nВ списке: {selected_list_title}"),
         Format("Приоритет: {priority_label}"),
         Format("Срочность: {urgency_label}"),
         Const("\nСтатус задачи:"),
@@ -157,7 +158,7 @@ task_actions_dialog = Dialog(
     WindowWithInput(
         Format("{task_title}"),
         Format("{description}", when="description"),
-        Format("\nВ списке: {list_title}"),
+        Format("\nВ списке: {selected_list_title}"),
         Format("Приоритет: {priority_label}"),
         Format("Срочность: {urgency_label}"),
         Const("\nСтатус задачи:"),
@@ -203,10 +204,10 @@ task_actions_dialog = Dialog(
             text="{recurrence_rule_text}",
             when=F["is_recurring"] & ~F["canceled_at"],
         ),
-        SwitchTo(
+        Button(
             text=Const("Список"),
-            id="list_title",
-            state=TaskActionsDialogSG.select_list_window,
+            id="select_list",
+            on_click=select_list,
         ),
         SwitchTo(
             text=Const("Приоритет"),
@@ -325,4 +326,5 @@ task_actions_dialog = Dialog(
         state=TaskActionsDialogSG.not_cancel_task_window,
     ),
     on_start=get_start_data,
+    on_process_result=on_process_result,
 )
