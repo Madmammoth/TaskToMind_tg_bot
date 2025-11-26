@@ -177,6 +177,8 @@ async def get_user_tasks(
                 TaskAccess.task_id == Task.task_id,
                 TaskAccess.user_id == user_id,
                 Task.parent_task_id.is_(None),
+                Task.completed_at.is_(None),
+                Task.canceled_at.is_(None),
             )
         ).order_by(rule)
     )
@@ -236,6 +238,11 @@ async def get_user_tasks_in_list(
     tasks = result.all()
 
     if not tasks:
+        logger.debug(
+            "Задачи в списке id=%d не найдены "
+            "или недоступны для пользователя id=%d",
+            list_id, user_id
+        )
         return []
 
     logger.debug(
@@ -412,6 +419,38 @@ async def not_complete_task(
     )
     await session.execute(stmt)
     logger.debug("Задача id=%d в работе", task_id)
+
+
+async def change_list_for_task(
+        session: AsyncSession,
+        task_id: int,
+        old_list_id: int,
+        new_list_id: int,
+):
+    logger.debug(
+        "Изменение у задачи id=%d связи со списком id=%d "
+        "на связь со списком id=%d",
+        task_id, old_list_id, new_list_id
+    )
+
+    stmt = (
+        update(TaskInList)
+        .where(
+            TaskInList.task_id == task_id,
+            TaskInList.list_id == old_list_id,
+        )
+        .values(
+            list_id=new_list_id,
+            previous_list_id=old_list_id,
+            updated_at=func.now(),
+        )
+    )
+    await session.execute(stmt)
+    logger.debug(
+        "Изменена у задачи id=%d связь со списком id=%d "
+        "на связь со списком id=%d",
+        task_id, old_list_id, new_list_id
+    )
 
 
 async def cancel_task(
