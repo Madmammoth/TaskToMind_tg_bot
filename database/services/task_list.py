@@ -50,7 +50,7 @@ def build_ordered_hierarchy(rows: Sequence[Row]) -> list[dict]:
             comp = f"{sub_list['position']}."
             pos = f"{prefix}{comp}"
             ordered_lists.append({
-                "list_id": str(sub_list["list_id"]),
+                "list_id": sub_list["list_id"],
                 "list_title": sub_list["list_title"],
                 "pos": pos,
             })
