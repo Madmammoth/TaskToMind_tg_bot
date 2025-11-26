@@ -129,6 +129,11 @@ def create_list_task_link(
         list_id: int,
         task_id: int,
 ):
+    logger.debug(
+        "Добавление в запрос создание связи "
+        "между списком id=%d и задачей id=%d",
+        list_id, task_id
+    )
     session.add(
         TaskInList(
             list_id=list_id,
@@ -142,6 +147,11 @@ def create_task_access(
         user_id: int,
         task_id: int,
 ):
+    logger.debug(
+        "Добавление в запрос создание доступа уровня «Владелец» "
+        "пользователю id=%d к задаче id=%d",
+        user_id, task_id
+    )
     session.add(
         TaskAccess(
             task_id=task_id,
