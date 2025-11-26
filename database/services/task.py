@@ -33,6 +33,12 @@ from database.crud.task import (
     not_complete_task,
     cancel_task,
     not_cancel_task,
+    change_list_for_task,
+)
+from database.crud.task_list import(
+    get_user_trash_list_id,
+    get_user_archive_list_id,
+    get_previous_list_id,
 )
 from database.crud.tracking import log_activity
 from database.crud.user import get_user_timezone
@@ -281,6 +287,9 @@ async def complete_task_with_stats_achievs_log(
     task_id = task_data.get("task_id")
     try:
         await complete_task(session, task_id)
+        list_id = task_data.get("list_id")
+        archive_list_id = await get_user_archive_list_id(session, user_id)
+        await change_list_for_task(session, task_id, list_id, archive_list_id)
         await update_users_stats_achievs_on_task_completed(session, task_data)
         await log_activity(
             session,
@@ -288,6 +297,7 @@ async def complete_task_with_stats_achievs_log(
             success=True,
             user_id=user_id,
             task_id=task_id,
+            extra={"old_list_id": list_id, "new_list_id": archive_list_id}
         )
         logger.debug(
             "Обновлена база данных при выполнении задачи id=%d", task_id
@@ -375,6 +385,11 @@ async def not_complete_task_with_stats_achievs_log(
     logger.debug("...id=%d", task_id)
     try:
         await not_complete_task(session, task_id)
+        list_id = task_data.get("list_id")
+        previous_list_id = await get_previous_list_id(
+            session, task_id, list_id
+        )
+        await change_list_for_task(session, task_id, list_id, previous_list_id)
         await update_users_stats_achievs_on_task_uncompleted(session,
                                                              task_data)
         await log_activity(
@@ -469,6 +484,9 @@ async def cancel_task_with_stats_achievs_log(
     logger.debug("...id=%d", task_id)
     try:
         await cancel_task(session, task_id)
+        list_id = task_data.get("list_id")
+        trash_list_id = await get_user_trash_list_id(session, user_id)
+        await change_list_for_task(session, task_id, list_id, trash_list_id)
         await update_users_stats_achievs_on_task_canceled(session, task_data)
         await log_activity(
             session,
@@ -478,6 +496,7 @@ async def cancel_task_with_stats_achievs_log(
             task_id=task_id,
             old_value=task_data.get("status"),
             new_value=TaskStatusEnum.CANCELED,
+            extra={"old_list_id": list_id, "new_list_id": trash_list_id}
         )
         logger.debug(
             "Обновлена база данных при отмене пользователем id=%d "
@@ -569,6 +588,11 @@ async def not_cancel_task_with_stats_achievs_log(
     logger.debug("...id=%d", task_id)
     try:
         await not_cancel_task(session, task_id)
+        list_id = task_data.get("list_id")
+        previous_list_id = await get_previous_list_id(
+            session, task_id, list_id
+        )
+        await change_list_for_task(session, task_id, list_id, previous_list_id)
         await update_users_stats_achievs_on_task_uncanceled(session,
                                                             task_data)
         await log_activity(

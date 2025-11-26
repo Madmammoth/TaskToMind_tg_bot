@@ -859,7 +859,9 @@ def upgrade() -> None:
     op.create_table('tasks_in_lists',
     sa.Column('list_id', sa.Integer(), nullable=False),
     sa.Column('task_id', sa.Integer(), nullable=False),
+    sa.Column('previous_list_id', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['list_id'], ['lists.list_id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['task_id'], ['tasks.task_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('list_id', 'task_id')

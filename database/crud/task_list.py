@@ -4,7 +4,7 @@ from typing import Sequence
 from sqlalchemy import select, Row, func, and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import TaskList, ListAccess, AccessRoleEnum
+from database.models import TaskList, ListAccess, AccessRoleEnum, TaskInList
 from database.models.enums import SystemListTypeEnum
 
 logger = logging.getLogger(__name__)
@@ -88,13 +88,13 @@ async def create_list_access(
         position: int
 ):
     list_access = ListAccess(
-            list_id=list_id,
-            user_id=user_id,
-            role=AccessRoleEnum.OWNER,
-            granted_by=user_id,
-            position=position,
-            parent_list_id=parent_id,
-        )
+        list_id=list_id,
+        user_id=user_id,
+        role=AccessRoleEnum.OWNER,
+        granted_by=user_id,
+        position=position,
+        parent_list_id=parent_id,
+    )
     session.add(list_access)
     return list_access
 
@@ -129,7 +129,6 @@ async def create_list(
         title: str,
         parent_id: int | None
 ) -> TaskList:
-
     task_list = TaskList(
         title=title,
         parent_list_id=parent_id,
@@ -205,3 +204,72 @@ async def db_delete_list(
             user_id, e,
         )
         raise
+
+
+async def get_user_trash_list_id(
+        session: AsyncSession,
+        user_id: int,
+):
+    logger.debug("Получение id Корзины пользователя id=%d", user_id)
+
+    stmt = (
+        select(TaskList.list_id)
+        .join(ListAccess, ListAccess.list_id == TaskList.list_id)
+        .where(
+            ListAccess.user_id == user_id,
+            ListAccess.role == AccessRoleEnum.OWNER,
+            TaskList.system_type == SystemListTypeEnum.TRASH,
+        )
+    )
+    result = await session.execute(stmt)
+    trash_list_id = result.scalar_one_or_none()
+    logger.debug(
+        "Получен id=%s Корзины пользователя id=%d", trash_list_id, user_id
+    )
+    return trash_list_id
+
+
+async def get_user_archive_list_id(
+        session: AsyncSession,
+        user_id: int,
+):
+    logger.debug("Получение id Архива пользователя id=%d", user_id)
+
+    stmt = (
+        select(TaskList.list_id)
+        .join(ListAccess, ListAccess.list_id == TaskList.list_id)
+        .where(
+            ListAccess.user_id == user_id,
+            ListAccess.role == AccessRoleEnum.OWNER,
+            TaskList.system_type == SystemListTypeEnum.ARCHIVE,
+        )
+    )
+    result = await session.execute(stmt)
+    archive_list_id = result.scalar_one_or_none()
+    logger.debug(
+        "Получен id=%s Архива пользователя id=%d", archive_list_id, user_id
+    )
+    return archive_list_id
+
+
+async def get_previous_list_id(
+        session: AsyncSession,
+        task_id: int,
+        list_id: int,
+):
+    logger.debug("Получение id предыдущего списка для задачи id=%d", task_id)
+
+    stmt = (
+        select(TaskInList.previous_list_id)
+        .where(
+            TaskInList.list_id == list_id,
+            TaskInList.task_id == task_id,
+        )
+    )
+    result = await session.execute(stmt)
+    previous_list_id = result.scalar_one_or_none()
+    logger.debug(
+        "Получен id=%s предыдущего списка для задачи id=%d",
+        previous_list_id, task_id
+    )
+    return previous_list_id

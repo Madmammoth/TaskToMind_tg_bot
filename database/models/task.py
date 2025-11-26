@@ -117,7 +117,7 @@ class Task(Base, make_timestamp_mixin()):
                 f"status={self.status.value}, title={self.title[:20]!r}>")
 
 
-class TaskInList(Base, make_timestamp_mixin(include_updated=False)):
+class TaskInList(Base, make_timestamp_mixin()):
     __tablename__ = "tasks_in_lists"
 
     list_id: Mapped[int] = mapped_column(
@@ -129,6 +129,10 @@ class TaskInList(Base, make_timestamp_mixin(include_updated=False)):
         Integer,
         ForeignKey("tasks.task_id", ondelete="CASCADE"),
         primary_key=True,
+    )
+    previous_list_id: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
     )
 
     task_list = relationship(

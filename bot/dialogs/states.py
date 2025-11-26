@@ -46,6 +46,8 @@ class TaskActionsDialogSG(StatesGroup):
 
 class TasksManagementDialogSG(StatesGroup):
     main_tasks_window = State()
+    trash_window = State()
+    archive_window = State()
 
 
 class CreateListDialogSG(StatesGroup):
