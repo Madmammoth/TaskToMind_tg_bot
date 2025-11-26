@@ -6,9 +6,12 @@ from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import TaskActionsDialogSG
-from database.services.task import complete_task_with_stats_achievs_log, \
-    not_complete_task_with_stats_achievs_log, \
-    cancel_task_with_stats_achievs_log, not_cancel_task_with_stats_achievs_log
+from database.orchestration.task import (
+    complete_task_with_stats_achievs_log,
+    not_complete_task_with_stats_achievs_log,
+    cancel_task_with_stats_achievs_log,
+    not_cancel_task_with_stats_achievs_log,
+)
 from utils.serialization import from_dialog_safe
 
 logger = logging.getLogger(__name__)
@@ -144,7 +147,6 @@ async def go_not_cancel_yes(
         state=TaskActionsDialogSG.main_task_window,
         show_mode=ShowMode.DELETE_AND_SEND,
     )
-
 
 
 async def postpone(

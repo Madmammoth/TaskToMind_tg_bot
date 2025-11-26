@@ -7,7 +7,7 @@ from aiogram_dialog import DialogManager, StartMode, ShowMode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.dialogs.states import StartSG, HelpSG
-from database.services.user import upsert_user_with_log
+from database.orchestration.user import upsert_user_with_log
 
 logger = logging.getLogger(__name__)
 

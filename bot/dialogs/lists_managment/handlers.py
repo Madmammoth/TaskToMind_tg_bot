@@ -10,7 +10,7 @@ from bot.dialogs.states import (
     ListsManagementDialogSG,
     TaskActionsDialogSG,
 )
-from database.services.task_list import delete_list_with_stats_log
+from database.orchestration.task_list import delete_list_with_stats_log
 
 logger = logging.getLogger(__name__)
 
