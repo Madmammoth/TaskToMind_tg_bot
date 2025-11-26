@@ -6,6 +6,7 @@ from aiogram_dialog.widgets.kbd import Button
 
 from bot.dialogs.create_task.handlers import make_default_task_data
 from bot.dialogs.states import CreateTaskDialogSG, CreateListDialogSG
+from utils.serialization import to_dialog_safe
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ async def go_create_task(
     logger.debug("Переход в диалог создания задачи")
     message_id = dialog_manager.dialog_data.get("message_id")
     task_text = dialog_manager.dialog_data.get("text")
-    task_data = make_default_task_data(message_id, task_text)
+    task_data = to_dialog_safe(make_default_task_data(message_id, task_text))
     await dialog_manager.start(
         state=CreateTaskDialogSG.add_task_window,
         data=task_data,

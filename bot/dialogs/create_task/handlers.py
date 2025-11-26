@@ -11,6 +11,7 @@ from bot.dialogs.states import CreateTaskDialogSG
 from database.models import LevelEnum
 from database.orchestration.task import add_task_with_stats_achievs_log
 from locales.ru import PRIORITY_LABELS, URGENCY_LABELS
+from utils.serialization import to_dialog_safe, from_dialog_safe
 
 logger = logging.getLogger(__name__)
 
@@ -73,25 +74,27 @@ async def go_save_yes(
         _widget: Button,
         dialog_manager: DialogManager,
 ):
-    logger.debug(
-        "Сохранение задачи. Функция %s",
-        go_save_yes.__name__
-    )
-    session: AsyncSession = dialog_manager.middleware_data["session"]
+    logger.debug("Сохранение задачи пользователем...")
     user_id = callback.from_user.id
-    message_id = dialog_manager.dialog_data["message_id"]
+    logger.debug("...id=%d", user_id)
+    session: AsyncSession = dialog_manager.middleware_data["session"]
+    task_data = from_dialog_safe(dialog_manager.dialog_data)
+    message_id = task_data["message_id"]
+
     await add_task_with_stats_achievs_log(
         session=session,
         user_id=user_id,
-        task_data=dialog_manager.dialog_data,
+        task_data=task_data,
     )
+
     await callback.bot.send_message(
         chat_id=callback.message.chat.id,
         text="Задача успешно добавлена!",
         reply_to_message_id=message_id,
     )
+    logger.debug("Задача создана пользователем id=%d", user_id)
     await dialog_manager.done(
-        result={"create_task": "done"},
+        result={"1": "1"},
         show_mode=ShowMode.DELETE_AND_SEND
     )
 
@@ -159,12 +162,12 @@ def make_default_task_data(message_id, task_text) -> dict[str, str | Any]:
         "message_id": message_id,
         "task_title": task_title,
         "task_description": task_description,
-        "list_title": "Входящие",
+        "selected_list_title": "Входящие",
         "priority": LevelEnum.LOW,
         "priority_label": PRIORITY_LABELS[LevelEnum.LOW],
         "urgency": LevelEnum.LOW,
         "urgency_label": URGENCY_LABELS[LevelEnum.LOW],
-        "show_lists_mode": "create_task",
+        "mode": "create_task",
     }
     return task_data
 
@@ -183,7 +186,7 @@ async def correct_text_task_input(
 ):
     logger.debug("Запуск диалога добавления задачи")
     task_data = make_default_task_data(message.message_id, message.html_text)
-    dialog_manager.dialog_data.update(task_data)
+    dialog_manager.dialog_data.update(to_dialog_safe(task_data))
 
     await dialog_manager.switch_to(
         state=CreateTaskDialogSG.add_task_window,
@@ -223,12 +226,12 @@ async def update_data(
         dialog_manager: DialogManager,
 ):
     logger.debug(
-        "Передача словаря result=%s из диалога создания списка "
+        "Передача словаря result=%s из предыдущего диалога "
         "в диалог создания задачи",
         result,
     )
     if result:
-        dialog_manager.dialog_data.update(result),
+        dialog_manager.dialog_data.update(to_dialog_safe(result)),
         await dialog_manager.switch_to(
             state=CreateTaskDialogSG.add_task_window,
             show_mode=ShowMode.DELETE_AND_SEND,

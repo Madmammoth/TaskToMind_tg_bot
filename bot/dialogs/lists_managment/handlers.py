@@ -11,6 +11,7 @@ from bot.dialogs.states import (
     TaskActionsDialogSG,
 )
 from database.orchestration.task_list import delete_list_with_stats_log
+from utils.serialization import from_dialog_safe
 
 logger = logging.getLogger(__name__)
 
@@ -20,32 +21,36 @@ async def go_selected_task(
         _widget: Button,
         dialog_manager: DialogManager,
 ):
-    logger.debug("Открытие задачи...")
+    logger.debug("Открытие пользователем...")
+    user_id = callback.from_user.id
     sub_manager = cast(SubManager, dialog_manager)
     dialog_manager = sub_manager.manager
-    task_id = str(sub_manager.item_id)
-    logger.debug("Нажата кнопка для item_id=%s", task_id)
-    tasks = dialog_manager.dialog_data.get("tasks", {})
+    task_id = int(sub_manager.item_id)
+    logger.debug("...id=%d задачи id=%d", user_id, task_id)
+
+    tasks = from_dialog_safe(dialog_manager.dialog_data.get("tasks", {}))
     task_title = tasks.get(task_id)
+
     if not task_title:
+        logger.debug(
+            "Задача id=%d не найдена или не доступна для пользователя id=%d",
+            task_id, user_id
+        )
         await callback.answer("Ошибка: задача не найдена.")
         return
-    list_id = dialog_manager.dialog_data.get("list_id")
-    list_title = dialog_manager.dialog_data.get("list_title")
+
     data = {
-        "list_id": list_id,
-        "list_title": list_title,
         "task_id": task_id,
         "task_title": task_title,
     }
-    await callback.answer(f"Выбрана задача: {task_title}")
+
+    logger.debug(
+        "Выбрана задача id=%d, title=%s",
+        task_id, task_title
+    )
     await dialog_manager.start(
         state=TaskActionsDialogSG.main_task_window,
         data=data
-    )
-    logger.debug(
-        "Выбрана задача id=%s, title=%s",
-        task_id, task_title
     )
 
 
@@ -57,18 +62,19 @@ async def go_selected_list(
     logger.debug("Открытие списка задач...")
     sub_manager = cast(SubManager, dialog_manager)
     dialog_manager = sub_manager.manager
-    list_id = sub_manager.item_id
-    logger.debug("Нажата кнопка для item_id=%s", list_id)
-    lists = dialog_manager.dialog_data.get("lists", {})
-    dialog_manager.dialog_data["list_id"] = str(list_id)
+    list_id = int(sub_manager.item_id)
+    user_id = callback.from_user.id
+    logger.debug("...id=%d пользователем id=%d", list_id, user_id)
+
+    lists = from_dialog_safe(dialog_manager.dialog_data.get("lists", {}))
+    dialog_manager.dialog_data["selected_list_id"] = list_id
     logger.debug("Словарь dialog_data:")
     logger.debug(dialog_manager.dialog_data)
-    await callback.answer(f"Выбран список: {lists[list_id]}")
     await dialog_manager.switch_to(
         state=ListsManagementDialogSG.list_with_tasks
     )
     logger.debug(
-        "Установлен список задач id=%s, title=%s",
+        "Установлен список задач id=%d, title=%s",
         list_id, lists[list_id]
     )
 
