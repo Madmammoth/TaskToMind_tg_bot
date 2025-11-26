@@ -49,7 +49,9 @@ async def fetch_user_lists_raw(
     :param mode: режим отображения списков
     :return: список {list_id, list_title, pos}
     """
-    logger.debug("Запрос списков пользователя id=%d", user_id)
+    logger.debug(
+        "Запрос списков пользователя id=%d в режиме %s", user_id, mode
+    )
 
     stmt = (
         select(
@@ -66,14 +68,14 @@ async def fetch_user_lists_raw(
     )
 
     if mode == "add_in_list":
-        logger.debug("show_lists_mode=add_in_list")
+        logger.debug("mode=%s", mode)
         stmt = stmt.where(
             TaskList.system_type.not_in(
                 [SystemListTypeEnum.INBOX, SystemListTypeEnum.ARCHIVE]
             )
         )
-    elif mode == "create_task":
-        logger.debug("show_lists_mode=create_task")
+    elif mode in ("create_task", "task_action"):
+        logger.debug("mode=%s", mode)
         stmt = stmt.where(TaskList.system_type != SystemListTypeEnum.ARCHIVE)
 
     rows = (await session.execute(stmt)).all()

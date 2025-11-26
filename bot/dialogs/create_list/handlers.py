@@ -33,7 +33,7 @@ async def correct_title_list_input(
     dialog_manager.dialog_data.update({
         "message_id": str(message.message_id),
         "new_list_title": list_title,
-        "show_lists_mode": "add_list",
+        "mode": "create_list",
     })
     await dialog_manager.switch_to(
         state=CreateListDialogSG.add_list_window,
@@ -71,7 +71,7 @@ async def go_insert_in_list(
         dialog_manager: DialogManager
 ):
     logger.debug("Вложение списка задач в другой список задач")
-    dialog_manager.dialog_data["show_lists_mode"] = "add_in_list"
+    dialog_manager.dialog_data["mode"] = "add_in_list"
     await dialog_manager.switch_to(
         state=CreateListDialogSG.in_list_window,
     )
