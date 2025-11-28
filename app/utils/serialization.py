@@ -9,7 +9,11 @@ def generate_enum_map(module_path: str) -> dict:
     enum_map = {}
 
     for name, obj in inspect.getmembers(module):
-        if inspect.isclass(obj) and issubclass(obj, Enum):
+        if (
+            inspect.isclass(obj)
+            and issubclass(obj, Enum)
+            and obj.__module__ == module_path
+        ):
             enum_map[name] = obj
 
     return enum_map
