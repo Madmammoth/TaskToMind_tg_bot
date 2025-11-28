@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./.postgres_data:/var/lib/postgresql
+      - ../../docker-volumes/TaskToMind/postgres:/var/lib/postgresql
     ports:
       - "${POSTGRES_PORT}:5432"
     restart: unless-stopped
@@ -37,7 +37,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     volumes:
-      - ./.pgadmin_data:/var/lib/pgadmin
+      - ../../docker-volumes/TaskToMind/pgadmin:/var/lib/pgadmin
     ports:
       - "${PGADMIN_PORT}:80"
     restart: unless-stopped
@@ -59,7 +59,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./.redis_data:/data
+      - ../../docker-volumes/TaskToMind/redis:/data
     restart: unless-stopped
     ports:
       - "${REDIS_PORT}:6379"
