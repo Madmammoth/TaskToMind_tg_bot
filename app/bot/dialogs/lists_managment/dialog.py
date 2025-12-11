@@ -12,7 +12,7 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.text import Const, Format, List
 
 from app.bot.dialogs.common.getters import get_lists
-from app.bot.dialogs.common.handlers import on_process_result
+from app.bot.dialogs.common.handlers import combine_result_with_dialog_data
 from app.bot.dialogs.components import WindowWithInput, WindowWithoutInput
 from app.bot.dialogs.lists_managment.getters import (
     get_tasks,
@@ -143,5 +143,5 @@ lists_management_dialog = Dialog(
         getter=get_list_title_to_delete,
         state=ListsManagementDialogSG.delete_list_window,
     ),
-    on_process_result=on_process_result,
+    on_process_result=combine_result_with_dialog_data,
 )

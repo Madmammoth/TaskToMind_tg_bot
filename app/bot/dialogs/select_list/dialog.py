@@ -9,7 +9,7 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.text import Const, Format
 
 from app.bot.dialogs.common.getters import get_lists
-from app.bot.dialogs.common.handlers import get_start_data
+from app.bot.dialogs.common.handlers import combine_start_data_with_dialog_data
 from app.bot.dialogs.components import WindowWithoutInput
 from app.bot.dialogs.select_list.handlers import select_list
 from app.bot.dialogs.states import SelectListDialogSG, CreateListDialogSG
@@ -41,5 +41,5 @@ select_list_dialog = Dialog(
         getter=get_lists,
         state=SelectListDialogSG.select_list_window
     ),
-    on_start=get_start_data,
+    on_start=combine_start_data_with_dialog_data,
 )

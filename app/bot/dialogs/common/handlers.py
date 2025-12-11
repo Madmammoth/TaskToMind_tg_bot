@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.kbd import Button
 logger = logging.getLogger(__name__)
 
 
-async def get_start_data(
+async def combine_start_data_with_dialog_data(
         start_data: dict,
         dialog_manager: DialogManager,
 ):
@@ -26,7 +26,7 @@ async def go_pass(
     await callback.answer("Эта кнопка пока не работает")
 
 
-async def on_process_result(
+async def combine_result_with_dialog_data(
         _start_data,
         result: dict,
         dialog_manager: DialogManager

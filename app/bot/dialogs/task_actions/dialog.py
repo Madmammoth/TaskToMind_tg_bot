@@ -12,7 +12,9 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.text import Format, Const, List
 
 from app.bot.dialogs.common.getters import get_dialog_data
-from app.bot.dialogs.common.handlers import get_start_data, on_process_result
+from app.bot.dialogs.common.handlers import (
+    combine_start_data_with_dialog_data, combine_result_with_dialog_data
+)
 from app.bot.dialogs.components import WindowWithInput, WindowWithoutInput
 from app.bot.dialogs.states import TaskActionsDialogSG, StartSG
 from app.bot.dialogs.task_actions.getters import get_task
@@ -325,6 +327,6 @@ task_actions_dialog = Dialog(
         getter=get_dialog_data,
         state=TaskActionsDialogSG.not_cancel_task_window,
     ),
-    on_start=get_start_data,
-    on_process_result=on_process_result,
+    on_start=combine_start_data_with_dialog_data,
+    on_process_result=combine_result_with_dialog_data,
 )

@@ -2,7 +2,9 @@ from aiogram_dialog import Dialog, ShowMode
 from aiogram_dialog.widgets.kbd import Row, Start, Cancel, Button
 from aiogram_dialog.widgets.text import Const
 
-from app.bot.dialogs.common.handlers import get_start_data, on_process_result
+from app.bot.dialogs.common.handlers import (
+    combine_start_data_with_dialog_data, combine_result_with_dialog_data
+)
 from app.bot.dialogs.components import WindowWithInput, WindowWithoutInput
 from app.bot.dialogs.start.handlers import (
     go_create_task,
@@ -67,7 +69,7 @@ start_dialog = Dialog(
         # ),
         state=StartSG.start_window,
     ),
-    on_process_result=on_process_result,
+    on_process_result=combine_result_with_dialog_data,
 )
 
 help_dialog = Dialog(
@@ -106,6 +108,6 @@ predict_dialog = Dialog(
         ),
         state=PredictSG.predict_window,
     ),
-    on_start=get_start_data,
+    on_start=combine_start_data_with_dialog_data,
     on_process_result=on_predict_dialog_process_result,
 )

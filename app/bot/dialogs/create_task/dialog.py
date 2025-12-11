@@ -13,7 +13,7 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Format, Const
 
-from app.bot.dialogs.common.handlers import get_start_data
+from app.bot.dialogs.common.handlers import combine_start_data_with_dialog_data
 from app.bot.dialogs.components import WindowWithoutInput
 from app.bot.dialogs.create_task.getters import get_task
 from app.bot.dialogs.create_task.handlers import (
@@ -267,6 +267,6 @@ create_task_dialog = Dialog(
         ),
         state=CreateTaskDialogSG.cancel_window
     ),
-    on_start=get_start_data,
+    on_start=combine_start_data_with_dialog_data,
     on_process_result=update_data,
 )
