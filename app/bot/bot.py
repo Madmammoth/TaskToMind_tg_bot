@@ -13,6 +13,7 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.bot.dialogs import dialogs
+from app.bot.dialogs.id_uniqueness_validator import validate_dialogs
 from app.bot.handlers import routers
 from app.bot.handlers.others import others_router
 from app.bot.middlewares.last_active import LastActiveMiddleware
@@ -55,6 +56,7 @@ async def main():
     dp = Dispatcher(storage=storage)
     logger.info("Including routers...")
     dp.include_routers(*routers)
+    validate_dialogs(dialogs)
     dp.include_routers(*dialogs)
     setup_dialogs(dp)
     dp.include_router(others_router)
