@@ -231,7 +231,7 @@ async def update_data(
         result,
     )
     if result:
-        dialog_manager.dialog_data.update(to_dialog_safe(result)),
+        dialog_manager.dialog_data.update(result),
         await dialog_manager.switch_to(
             state=CreateTaskDialogSG.add_task_window,
             show_mode=ShowMode.DELETE_AND_SEND,
