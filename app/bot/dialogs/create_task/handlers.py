@@ -149,7 +149,7 @@ async def go_cancel_yes(
 def split_title_and_description(text: str):
     cleaned = text.strip()
     if not cleaned:
-        return "Моя задача", None
+        return "Новая задача", None
     lines = cleaned.split("\n", 1)
     title = lines[0].strip()
     description = lines[1].strip() if len(lines) > 1 else None
@@ -167,7 +167,6 @@ def make_default_task_data(message_id, task_text) -> dict[str, str | Any]:
         "priority_label": PRIORITY_LABELS[LevelEnum.LOW],
         "urgency": LevelEnum.LOW,
         "urgency_label": URGENCY_LABELS[LevelEnum.LOW],
-        "mode": "create_task",
     }
     return task_data
 
@@ -220,25 +219,23 @@ async def wrong_text_task_input(
     )
 
 
-async def update_data(
+async def update_dialog_data_from_result(
         _start_data,
         result,
         dialog_manager: DialogManager,
 ):
     logger.debug(
-        "Передача словаря result=%s из предыдущего диалога "
-        "в диалог создания задачи",
+        "Передача result=%s из предыдущего диалога в диалог создания задачи",
         result,
     )
-    if result:
+    if type(result) is dict:
         dialog_manager.dialog_data.update(result),
         await dialog_manager.switch_to(
             state=CreateTaskDialogSG.add_task_window,
             show_mode=ShowMode.DELETE_AND_SEND,
         )
         logger.debug(
-            "Переход в диалог создания задачи "
-            "в окно настройки создаваемой задачи"
+            "Переход в окно настройки создаваемой задачи диалога создания задачи"
         )
     else:
-        logger.debug("Переход в диалог создания задачи в окно выбора списка")
+        logger.debug("Переход в окно выбора списка диалога создания задачи")
