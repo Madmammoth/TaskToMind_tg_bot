@@ -21,7 +21,7 @@ from app.database.crud.task_list import (
 logger = logging.getLogger(__name__)
 
 
-def build_ordered_hierarchy(rows: Sequence[Row]) -> list[dict]:
+def build_ordered_hierarchy(rows: Sequence[Row]) -> tuple[list[dict], dict]:
     if not rows:
         logger.debug("rows is empty")
         return []
@@ -40,7 +40,8 @@ def build_ordered_hierarchy(rows: Sequence[Row]) -> list[dict]:
         }
         sub_lists_map[parent_list_id].append(nodes[list_id])
 
-    ordered_lists: list[dict[str, Any]] = []
+    ordered_buttons: list[dict[str, Any]] = []
+    ordered_lists: dict[int, str] = {}
 
     def traverse(parent_id: int | None, prefix: str):
         sub_lists = sub_lists_map.get(parent_id, [])
@@ -49,16 +50,16 @@ def build_ordered_hierarchy(rows: Sequence[Row]) -> list[dict]:
         for sub_list in sub_lists:
             comp = f"{sub_list['position']}."
             pos = f"{prefix}{comp}"
-            ordered_lists.append({
+            ordered_buttons.append({
                 "list_id": sub_list["list_id"],
                 "list_title": sub_list["list_title"],
                 "pos": pos,
             })
+            ordered_lists[sub_list["list_id"]] = sub_list["list_title"]
             traverse(sub_list["list_id"], pos)
 
     traverse(None, "")
-    logger.debug("Получено списков: %d", len(rows))
-    return ordered_lists
+    return ordered_buttons, ordered_lists
 
 
 async def db_add_list(
