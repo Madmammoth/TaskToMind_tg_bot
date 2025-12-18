@@ -3,6 +3,7 @@ from typing import Any
 
 class MockDialogManager:
     def __init__(self):
+        self.start_data: dict[str, Any] | None = None
         self.dialog_data: dict[str, Any] = {}
         self.middleware_data: dict[str, Any] = {}
         self.result: Any = None
@@ -16,6 +17,10 @@ class MockDialogManager:
     async def switch_to(self, state, **_):
         self.last_state = state
 
+    async def start(self, state, data: dict[str, Any] | None = None):
+        self.last_state = state
+        self.start_data = data
+
 
 class MockSubManager:
     def __init__(self, manager: MockDialogManager, item_id: Any):
@@ -27,7 +32,7 @@ class MockText:
     def __init__(self, text: str):
         self._text = text
 
-    async def render_text(self, data, manager):
+    async def render_text(self, _data, _manager):
         return self._text
 
 
@@ -36,5 +41,5 @@ class MockButton:
         self.widget_id = widget_id
         self.text = MockText(text)
 
-    async def render_text(self, data, manager):
+    async def render_text(self, _data, _manager):
         return self.text or ""
