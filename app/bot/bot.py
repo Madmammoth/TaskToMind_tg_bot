@@ -9,6 +9,8 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram_dialog import setup_dialogs
+from dishka import make_async_container
+from dishka.integrations.aiogram import setup_dishka
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -19,6 +21,7 @@ from app.bot.handlers.others import others_router
 from app.bot.middlewares.last_active import LastActiveMiddleware
 from app.config_data.config import Config, load_config
 from app.database.middlewares.db_session import DbSessionMiddleware
+from app.di.providers import OrchestrationProvider, DbProvider
 
 logger = logging.getLogger(__name__)
 
@@ -32,16 +35,13 @@ async def main():
     config: Config = load_config()
 
     dsn = config.pg_settings.get_dsn()
-    engine = create_async_engine(
-        url=dsn,
-        echo=True,
-    )
+    engine = create_async_engine(url=dsn, echo=True)
 
     bot = Bot(
         token=config.bot_settings.token.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
-    key_builder = DefaultKeyBuilder(with_destiny=True)
+
     redis_client = Redis(
         host=config.redis_settings.host,
         port=config.redis_settings.port,
@@ -49,21 +49,29 @@ async def main():
         password=config.redis_settings.password.get_secret_value(),
         username=config.redis_settings.username,
     )
-    storage = RedisStorage(
-        redis=redis_client,
-        key_builder=key_builder,
-    )
+    key_builder = DefaultKeyBuilder(with_destiny=True)
+    storage = RedisStorage(redis=redis_client, key_builder=key_builder)
+
     dp = Dispatcher(storage=storage)
+
     logger.info("Including routers...")
     dp.include_routers(*routers)
     validate_dialogs(dialogs)
     dp.include_routers(*dialogs)
     setup_dialogs(dp)
     dp.include_router(others_router)
+
     logger.info("Including middlewares...")
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
     dp.update.middleware(DbSessionMiddleware(session_maker))
     dp.update.middleware(LastActiveMiddleware(session_maker, redis_client))
+
+    container = make_async_container(
+        DbProvider(),
+        OrchestrationProvider(),
+    )
+    setup_dishka(container, dp)
+
     try:
         await dp.start_polling(
             bot,
@@ -71,3 +79,5 @@ async def main():
         )
     except Exception as e:
         logger.exception(e)
+    finally:
+        await bot.session.close()
