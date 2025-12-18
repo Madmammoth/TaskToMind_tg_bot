@@ -124,7 +124,7 @@ def validate_dialog(dialog):
 
 
 def validate_dialogs(all_dialogs):
-    logger.info(
+    logger.debug(
         "Starting validation of unique widget IDs within windows of dialogs"
     )
     errors = []
@@ -138,7 +138,7 @@ def validate_dialogs(all_dialogs):
     if errors:
         raise DialogsValidationError("\n\n".join(errors))
 
-    logger.info(
+    logger.debug(
         "Completed validation: "
         "unique widget IDs confirmed within dialog windows"
     )
