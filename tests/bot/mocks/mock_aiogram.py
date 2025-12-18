@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional
 
 from aiogram.types import Message, Chat, User
@@ -24,7 +25,7 @@ class MockMessage(Message):
     def __init__(self, message_id: int, text: str):
         super().__init__(
             message_id=message_id,
-            date=None,
+            date=datetime.now(timezone.utc),
             chat=Chat(id=1, type="private"),
             from_user=User(id=1, is_bot=False, first_name="F"),
             text=text,
