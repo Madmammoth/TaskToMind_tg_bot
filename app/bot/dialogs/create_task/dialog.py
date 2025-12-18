@@ -13,7 +13,7 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Format, Const
 
-from app.bot.dialogs.common.handlers import combine_start_data_with_dialog_data
+from app.bot.dialogs.common.handlers import update_dialog_data_from_start
 from app.bot.dialogs.components import WindowWithoutInput
 from app.bot.dialogs.create_task.getters import get_task
 from app.bot.dialogs.create_task.handlers import (
@@ -25,9 +25,10 @@ from app.bot.dialogs.create_task.handlers import (
     empty_text_input,
     correct_text_task_input,
     wrong_text_task_input,
-    update_data,
+    update_dialog_data_from_result,
 )
 from app.bot.dialogs.states import CreateTaskDialogSG, SelectListDialogSG
+from app.database.orchestration.list_selection import ListSelectionMode
 
 create_task_dialog = Dialog(
     Window(
@@ -61,7 +62,7 @@ create_task_dialog = Dialog(
                 text=Const("Список"),
                 id="select_list",
                 state=SelectListDialogSG.select_list_window,
-                data={"mode": "create_task"}
+                data={"mode": ListSelectionMode.CREATE_TASK},
             ),
             SwitchTo(
                 text=Const("Приоритет"),
@@ -267,6 +268,6 @@ create_task_dialog = Dialog(
         ),
         state=CreateTaskDialogSG.cancel_window
     ),
-    on_start=combine_start_data_with_dialog_data,
-    on_process_result=update_data,
+    on_start=update_dialog_data_from_start,
+    on_process_result=update_dialog_data_from_result,
 )
