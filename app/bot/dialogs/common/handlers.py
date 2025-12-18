@@ -1,4 +1,5 @@
 import logging
+from types import NoneType
 
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
@@ -12,8 +13,12 @@ async def update_dialog_data_from_start(
         dialog_manager: DialogManager,
 ):
     logger.debug("Передача в новый диалог start_data=%s", start_data)
+
+    if type(start_data) not in (dict, NoneType):
+        raise ValueError("Incorrect start_data type: %s", type(start_data))
+
     if start_data is None:
-        start_data = {}
+        return
     dialog_manager.dialog_data.update(start_data)
 
 
