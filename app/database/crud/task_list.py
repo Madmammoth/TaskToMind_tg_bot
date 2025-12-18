@@ -40,18 +40,14 @@ async def create_default_lists_for_user(
 async def fetch_user_lists_raw(
         session: AsyncSession,
         user_id: int,
-        mode: str = "default",
 ) -> Sequence[Row]:
     """
-    Возвращает списки пользователя в зависимости от режима отображения
+    Возвращает списки пользователя
     :param session: сессия СУБД
     :param user_id: ID пользователя
-    :param mode: режим отображения списков
     :return: список {list_id, list_title, pos}
     """
-    logger.debug(
-        "Запрос списков пользователя id=%d в режиме %s", user_id, mode
-    )
+    logger.debug("Запрос списков пользователя id=%d", user_id)
 
     stmt = (
         select(
@@ -67,19 +63,7 @@ async def fetch_user_lists_raw(
         .where(ListAccess.position != 0)
     )
 
-    if mode == "add_in_list":
-        logger.debug("mode=%s", mode)
-        stmt = stmt.where(
-            TaskList.system_type.not_in(
-                [SystemListTypeEnum.INBOX, SystemListTypeEnum.ARCHIVE]
-            )
-        )
-    elif mode in ("create_task", "task_action"):
-        logger.debug("mode=%s", mode)
-        stmt = stmt.where(TaskList.system_type != SystemListTypeEnum.ARCHIVE)
-
-    rows = (await session.execute(stmt)).all()
-    return rows
+    return (await session.execute(stmt)).all()
 
 
 async def create_list_access(
