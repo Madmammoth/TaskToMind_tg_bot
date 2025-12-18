@@ -25,7 +25,7 @@ from app.bot.dialogs.create_list.handlers import (
     go_cancel_yes,
 )
 from app.bot.dialogs.create_task.handlers import empty_text_check
-from app.bot.dialogs.common.handlers import combine_start_data_with_dialog_data
+from app.bot.dialogs.common.handlers import update_dialog_data_from_start
 from app.bot.dialogs.states import CreateListDialogSG
 
 create_list_dialog = Dialog(
@@ -126,5 +126,5 @@ create_list_dialog = Dialog(
         ),
         state=CreateListDialogSG.cancel_window
     ),
-    on_start=combine_start_data_with_dialog_data,
+    on_start=update_dialog_data_from_start,
 )

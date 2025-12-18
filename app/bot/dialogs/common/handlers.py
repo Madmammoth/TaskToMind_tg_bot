@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.kbd import Button
 logger = logging.getLogger(__name__)
 
 
-async def combine_start_data_with_dialog_data(
+async def update_dialog_data_from_start(
         start_data: dict,
         dialog_manager: DialogManager,
 ):

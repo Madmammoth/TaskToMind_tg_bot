@@ -3,7 +3,7 @@ from aiogram_dialog.widgets.kbd import Row, Start, Cancel, Button
 from aiogram_dialog.widgets.text import Const
 
 from app.bot.dialogs.common.handlers import (
-    combine_start_data_with_dialog_data, combine_result_with_dialog_data
+    update_dialog_data_from_start
 )
 from app.bot.dialogs.components import WindowWithInput, WindowWithoutInput
 from app.bot.dialogs.start.handlers import (
@@ -69,7 +69,6 @@ start_dialog = Dialog(
         # ),
         state=StartSG.start_window,
     ),
-    on_process_result=combine_result_with_dialog_data,
 )
 
 help_dialog = Dialog(
@@ -108,6 +107,6 @@ predict_dialog = Dialog(
         ),
         state=PredictSG.predict_window,
     ),
-    on_start=combine_start_data_with_dialog_data,
+    on_start=update_dialog_data_from_start,
     on_process_result=on_predict_dialog_process_result,
 )
