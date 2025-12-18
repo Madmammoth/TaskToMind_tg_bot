@@ -19,6 +19,10 @@ async def go_create_task(
     logger.debug("Переход в диалог создания задачи")
     message_id = dialog_manager.dialog_data.get("message_id")
     task_text = dialog_manager.dialog_data.get("text")
+
+    if message_id is None or task_text is None:
+        raise ValueError("Missing required dialog_data: message_id or text")
+
     task_data = to_dialog_safe(make_default_task_data(message_id, task_text))
     await dialog_manager.start(
         state=CreateTaskDialogSG.add_task_window,
