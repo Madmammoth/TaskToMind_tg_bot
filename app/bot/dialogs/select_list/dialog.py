@@ -8,9 +8,9 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Const, Format
 
-from app.bot.dialogs.common.getters import get_lists
-from app.bot.dialogs.common.handlers import combine_start_data_with_dialog_data
+from app.bot.dialogs.common.handlers import update_dialog_data_from_start
 from app.bot.dialogs.components import WindowWithoutInput
+from app.bot.dialogs.select_list.getters import lists_getter
 from app.bot.dialogs.select_list.handlers import select_list
 from app.bot.dialogs.states import SelectListDialogSG, CreateListDialogSG
 
@@ -26,7 +26,7 @@ select_list_dialog = Dialog(
                 ),
                 id="lists_search",
                 item_id_getter=lambda item: item["list_id"],
-                items="lists"
+                items="buttons"
             ),
             id="scroll_lists_search",
             width=1,
@@ -38,8 +38,8 @@ select_list_dialog = Dialog(
             state=CreateListDialogSG.input_list_title_window,
         ),
         Cancel(Const("🔙 Назад")),
-        getter=get_lists,
+        getter=lists_getter,
         state=SelectListDialogSG.select_list_window
     ),
-    on_start=combine_start_data_with_dialog_data,
+    on_start=update_dialog_data_from_start,
 )
