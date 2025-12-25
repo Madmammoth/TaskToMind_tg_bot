@@ -7,14 +7,14 @@ from tests.bot.mocks import MockMessage
 
 
 @pytest.mark.asyncio
-async def test_correct_data(dm):
+async def test_correct_data(fake_dialog_manager):
     message = MockMessage(message_id=10, text="Test task\nTest description")
     wgt = AsyncMock()
     txt = message.text
 
-    await correct_text_task_input(message, wgt, dm, txt)
+    await correct_text_task_input(message, wgt, fake_dialog_manager, txt)
 
-    assert dm.dialog_data == {
+    assert fake_dialog_manager.dialog_data == {
         "message_id": 10,
         "task_title": "Test task",
         "task_description": "Test description",
@@ -27,14 +27,14 @@ async def test_correct_data(dm):
 
 
 @pytest.mark.asyncio
-async def test_empty_text(dm):
+async def test_empty_text(fake_dialog_manager):
     message = MockMessage(message_id=77, text="\t\n")
     wgt = AsyncMock()
     txt = message.text
 
-    await correct_text_task_input(message, wgt, dm, txt)
+    await correct_text_task_input(message, wgt, fake_dialog_manager, txt)
 
-    assert dm.dialog_data == {
+    assert fake_dialog_manager.dialog_data == {
         "message_id": 77,
         "task_title": "Новая задача",
         "task_description": None,

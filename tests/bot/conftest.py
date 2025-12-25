@@ -1,11 +1,11 @@
 import pytest
 
-from tests.bot.mocks import MockDialogManager, MockMessage, MockCallbackQuery
+from tests.bot.mocks import FakeDialogManager, MockMessage, MockCallbackQuery
 
 
 @pytest.fixture
-def dm():
-    return MockDialogManager()
+def fake_dialog_manager():
+    return FakeDialogManager()
 
 
 @pytest.fixture

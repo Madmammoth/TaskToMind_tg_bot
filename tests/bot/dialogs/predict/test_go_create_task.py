@@ -22,25 +22,25 @@ class CreateTaskStartData(BaseModel):
 
 
 @pytest.mark.asyncio
-async def test_with_correct_data(dm, mock_callback):
-    dm.dialog_data = {
+async def test_with_correct_data(fake_dialog_manager, mock_callback):
+    fake_dialog_manager.dialog_data = {
         "message_id": 777,
         "text": "Новая задача\nОписание задачи",
     }
     btn = MockButton(widget_id="new_task", text="Новая задача")
 
-    await go_create_task(mock_callback, btn, dm)  # noqa
+    await go_create_task(mock_callback, btn, fake_dialog_manager)  # noqa
 
-    assert dm.last_state == CreateTaskDialogSG.add_task_window
-    assert dm.start_data["message_id"] == 777
-    assert dm.start_data["task_title"] == "Новая задача"
-    assert dm.start_data["task_description"] == "Описание задачи"
-    assert dm.start_data["selected_list_title"] == "Входящие"
-    assert dm.start_data["priority"] == {"__enum__": "LevelEnum.LOW"}
-    assert dm.start_data["priority_label"] == "Низкий"
-    assert dm.start_data["urgency"] == {"__enum__": "LevelEnum.LOW"}
-    assert dm.start_data["urgency_label"] == "Низкая"
     assert dm.start_data["mode"] == "create_task"
+    assert fake_dialog_manager.last_state == CreateTaskDialogSG.add_task_window
+    assert fake_dialog_manager.start_data["message_id"] == 777
+    assert fake_dialog_manager.start_data["task_title"] == "Новая задача"
+    assert fake_dialog_manager.start_data["task_description"] == "Описание задачи"
+    assert fake_dialog_manager.start_data["selected_list_title"] == "Входящие"
+    assert fake_dialog_manager.start_data["priority"] == {"__enum__": "LevelEnum.LOW"}
+    assert fake_dialog_manager.start_data["priority_label"] == "Низкий"
+    assert fake_dialog_manager.start_data["urgency"] == {"__enum__": "LevelEnum.LOW"}
+    assert fake_dialog_manager.start_data["urgency_label"] == "Низкая"
 
 
 @pytest.mark.asyncio
@@ -52,22 +52,22 @@ async def test_with_correct_data(dm, mock_callback):
         {"text": "abc"}
     ],
 )
-async def test_missing_required_input(dm, mock_callback, dialog_data):
-    dm.dialog_data = dialog_data
+async def test_missing_required_input(fake_dialog_manager, mock_callback, dialog_data):
+    fake_dialog_manager.dialog_data = dialog_data
     btn = MockButton(widget_id="new_task", text="Новая задача")
 
     with pytest.raises(ValueError):
-        await go_create_task(mock_callback, btn, dm)  # noqa
+        await go_create_task(mock_callback, btn, fake_dialog_manager)  # noqa
 
 
 @pytest.mark.asyncio
-async def test_start_data_contract(dm, mock_callback):
-    dm.dialog_data = {
+async def test_start_data_contract(fake_dialog_manager, mock_callback):
+    fake_dialog_manager.dialog_data = {
         "message_id": 777,
         "text": "Новая задача\nОписание задачи",
     }
     btn = MockButton(widget_id="new_task", text="Новая задача")
 
-    await go_create_task(mock_callback, btn, dm)  # noqa
+    await go_create_task(mock_callback, btn, fake_dialog_manager)  # noqa
 
-    CreateTaskStartData.model_validate(dm.start_data)
+    CreateTaskStartData.model_validate(fake_dialog_manager.start_data)

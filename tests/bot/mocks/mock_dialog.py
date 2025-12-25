@@ -1,7 +1,8 @@
 from typing import Any
 
 
-class MockDialogManager:
+
+class FakeDialogManager:
     def __init__(self):
         self.start_data: dict[str, Any] | None = None
         self.dialog_data: dict[str, Any] = {}
@@ -22,8 +23,8 @@ class MockDialogManager:
         self.start_data = data
 
 
-class MockSubManager:
-    def __init__(self, manager: MockDialogManager, item_id: Any):
+class FakeSubManager:
+    def __init__(self, manager: FakeDialogManager, item_id: Any):
         self.manager = manager
         self.item_id = item_id
 

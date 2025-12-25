@@ -20,58 +20,58 @@ class AddTaskWindowContract(BaseModel):
 
 
 @pytest.mark.asyncio
-async def test_window_contract_minimal(dm):
-    dm.dialog_data = {
+async def test_window_contract_minimal(fake_dialog_manager):
+    fake_dialog_manager.dialog_data = {
         "task_title": "Новая задача",
         "selected_list_title": "Название списка",
         "priority_label": "Низкий",
         "urgency_label": "Низкая",
     }
 
-    data = await get_task(dm)
+    data = await get_task(fake_dialog_manager)
 
     AddTaskWindowContract.model_validate(data)
 
 
 @pytest.mark.asyncio
-async def test_window_contract_insufficient(dm):
-    dm.dialog_data = {
+async def test_window_contract_insufficient(fake_dialog_manager):
+    fake_dialog_manager.dialog_data = {
         "task_title": "Новая задача",
         "selected_list_title": "Название списка",
         "urgency_label": "Низкая",
     }
 
-    data = await get_task(dm)
+    data = await get_task(fake_dialog_manager)
 
     with pytest.raises(ValidationError):
         AddTaskWindowContract.model_validate(data)
 
 
 @pytest.mark.asyncio
-async def test_window_contract_wrong(dm):
-    dm.dialog_data = {
+async def test_window_contract_wrong(fake_dialog_manager):
+    fake_dialog_manager.dialog_data = {
         "task_title": "Новая задача",
         "list_title": "Название списка",
         "priority_level": "Низкий",
         "urgency_level": "Низкая",
     }
 
-    data = await get_task(dm)
+    data = await get_task(fake_dialog_manager)
 
     with pytest.raises(ValidationError):
         AddTaskWindowContract.model_validate(data)
 
 
 @pytest.mark.asyncio
-async def test_minimal_data(dm):
-    dm.dialog_data = {
+async def test_minimal_data(fake_dialog_manager):
+    fake_dialog_manager.dialog_data = {
         "task_title": "Новая задача",
         "selected_list_title": "Название списка",
         "priority_label": "Низкий",
         "urgency_label": "Низкая",
     }
 
-    data = await get_task(dm)
+    data = await get_task(fake_dialog_manager)
 
     assert data["task_title"] == "Новая задача"
     assert data.get("task_description") is None
@@ -81,8 +81,8 @@ async def test_minimal_data(dm):
 
 
 @pytest.mark.asyncio
-async def test_with_description(dm):
-    dm.dialog_data = {
+async def test_with_description(fake_dialog_manager):
+    fake_dialog_manager.dialog_data = {
         "task_title": "Новая задача",
         "task_description": "Описание задачи",
         "selected_list_title": "Название списка",
@@ -90,7 +90,7 @@ async def test_with_description(dm):
         "urgency_label": "Низкая",
     }
 
-    data = await get_task(dm)
+    data = await get_task(fake_dialog_manager)
 
     assert data["task_title"] == "Новая задача"
     assert data["task_description"] == "Описание задачи"
