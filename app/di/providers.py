@@ -9,8 +9,6 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.config_data.config import Config, load_config
-from app.database.orchestration.protocols import ApplyListSelection
-from app.database.orchestration.task import apply_list_selection
 
 
 class DbProvider(Provider):
@@ -38,9 +36,3 @@ class DbProvider(Provider):
     ) -> AsyncIterable[AsyncSession]:
         async with session_maker() as session:
             yield session
-
-
-class OrchestrationProvider(Provider):
-    @provide(scope=Scope.REQUEST)
-    def apply_list_selection(self) -> ApplyListSelection:
-        return apply_list_selection  # noqa

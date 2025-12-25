@@ -21,7 +21,7 @@ from app.bot.handlers.others import others_router
 from app.bot.middlewares.last_active import LastActiveMiddleware
 from app.config_data.config import Config, load_config
 from app.database.middlewares.db_session import DbSessionMiddleware
-from app.di.providers import OrchestrationProvider, DbProvider
+from app.di.providers import DbProvider
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,6 @@ async def main():
 
     container = make_async_container(
         DbProvider(),
-        OrchestrationProvider(),
     )
     setup_dishka(container, dp)
 
