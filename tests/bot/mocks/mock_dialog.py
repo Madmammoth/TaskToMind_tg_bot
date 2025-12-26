@@ -35,7 +35,7 @@ class MockText:
     def __init__(self, text: str):
         self._text = text
 
-    async def render_text(self, _data, _manager):
+    async def render_text(self, data, manager):  # noqa
         return self._text
 
 
@@ -44,5 +44,5 @@ class MockButton:
         self.widget_id = widget_id
         self.text = MockText(text)
 
-    async def render_text(self, _data, _manager):
+    async def render_text(self, data, manager):
         return self.text or ""
