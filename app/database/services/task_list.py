@@ -21,41 +21,45 @@ from app.database.crud.task_list import (
 logger = logging.getLogger(__name__)
 
 
-def build_ordered_hierarchy(rows: Sequence[Row]) -> tuple[list[dict], dict]:
+def build_ordered_hierarchy(
+        rows: Sequence[Row],
+        *,
+        is_hidden: Callable[[Row], bool] | None = None,
+) -> tuple[list[dict], dict]:
     if not rows:
         logger.debug("rows is empty")
-        return []
+        return [], {}
     logger.debug("rows=%s", rows)
 
     sub_lists_map: dict[int | None, list] = defaultdict(list)
-    nodes: dict[int, dict] = {}
 
-    for (list_id, title, parent_list_id, system_type, position) in rows:
-        nodes[list_id] = {
-            "list_id": list_id,
-            "list_title": title,
-            "parent_list_id": parent_list_id,
-            "system_type": system_type,
-            "position": position,
-        }
-        sub_lists_map[parent_list_id].append(nodes[list_id])
+    for row in rows:
+        sub_lists_map[row.parent_list_id].append({
+            "list_id": row.list_id,
+            "list_title": row.title,
+            "parent_list_id": row.parent_list_id,
+            "position": row.position,
+            "is_hidden": is_hidden(row) if is_hidden else False,
+        })
 
     ordered_buttons: list[dict[str, Any]] = []
     ordered_lists: dict[int, str] = {}
 
     def traverse(parent_id: int | None, prefix: str):
-        sub_lists = sub_lists_map.get(parent_id, [])
-        sub_lists.sort(key=lambda n: n["position"])
+        sub_lists = sorted(
+            sub_lists_map.get(parent_id, []),
+            key=lambda n: n["position"],
+        )
 
         for sub_list in sub_lists:
-            comp = f"{sub_list['position']}."
-            pos = f"{prefix}{comp}"
-            ordered_buttons.append({
-                "list_id": sub_list["list_id"],
-                "list_title": sub_list["list_title"],
-                "pos": pos,
-            })
-            ordered_lists[sub_list["list_id"]] = sub_list["list_title"]
+            pos = f"{prefix}{sub_list['position']}."
+            if not sub_list["is_hidden"]:
+                ordered_buttons.append({
+                    "list_id": sub_list["list_id"],
+                    "list_title": sub_list["list_title"],
+                    "pos": pos,
+                })
+                ordered_lists[sub_list["list_id"]] = sub_list["list_title"]
             traverse(sub_list["list_id"], pos)
 
     traverse(None, "")
