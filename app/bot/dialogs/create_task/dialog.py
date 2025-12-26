@@ -27,8 +27,8 @@ from app.bot.dialogs.create_task.handlers import (
     wrong_text_task_input,
     update_dialog_data_from_result,
 )
+from app.bot.dialogs.enums import ListSelectionMode
 from app.bot.dialogs.states import CreateTaskDialogSG, SelectListDialogSG
-from app.database.orchestration.list_selection import ListSelectionMode
 
 create_task_dialog = Dialog(
     Window(
