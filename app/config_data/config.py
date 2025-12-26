@@ -38,7 +38,7 @@ class RedisSettings(BaseModel):
     username: str
 
 
-class LogSetting(BaseModel):
+class LogSettings(BaseModel):
     level: str
     format: str
 
@@ -47,7 +47,7 @@ class Config(BaseModel):
     bot_settings: BotSettings
     pg_settings: PostgresSettings
     redis_settings: RedisSettings
-    log_settings: LogSetting
+    log_settings: LogSettings
 
 
 def load_config(path: str | None = None) -> Config:
@@ -75,7 +75,7 @@ def load_config(path: str | None = None) -> Config:
             password=env("REDIS_PASSWORD"),
             username=env("REDIS_USERNAME"),
         ),
-        log_settings=LogSetting(
+        log_settings=LogSettings(
             level=env("LOG_LEVEL"),
             format=env("LOG_FORMAT")
         ),
