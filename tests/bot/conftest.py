@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock
+
 import pytest
 
 from tests.bot.mocks import FakeDialogManager, MockMessage, MockCallbackQuery
@@ -16,3 +18,8 @@ def mock_message():
 @pytest.fixture
 def mock_callback():
     return MockCallbackQuery()
+
+
+@pytest.fixture
+def mock_session():
+    return AsyncMock()
