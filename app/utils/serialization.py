@@ -1,25 +1,9 @@
-import importlib
-import inspect
 from datetime import datetime, date
 from enum import Enum
 
+from app.database.models.enums import db_enums
 
-def generate_enum_map(module_path: str) -> dict:
-    module = importlib.import_module(module_path)
-    enum_map = {}
-
-    for name, obj in inspect.getmembers(module):
-        if (
-            inspect.isclass(obj)
-            and issubclass(obj, Enum)
-            and obj.__module__ == module_path
-        ):
-            enum_map[name] = obj
-
-    return enum_map
-
-
-ENUM_MAP = generate_enum_map("app.database.models.enums")
+_ENUM_MAP: dict[str, type[Enum]] = {cls.__name__: cls for cls in db_enums}
 
 
 def to_dialog_safe(value):
@@ -32,10 +16,7 @@ def to_dialog_safe(value):
     if isinstance(value, dict):
         safe_dict = {}
         for k, v in value.items():
-            if isinstance(k, int):
-                safe_key = f"__int__{k}"
-            else:
-                safe_key = k
+            safe_key = f"__int__{k}" if isinstance(k, int) else k
             safe_dict[safe_key] = to_dialog_safe(v)
         return safe_dict
 
@@ -52,7 +33,7 @@ def from_dialog_safe(value):
     if isinstance(value, dict):
         if "__enum__" in value:
             name, member = value["__enum__"].split(".")
-            return ENUM_MAP[name][member]
+            return _ENUM_MAP[name][member]
 
         if "__datetime__" in value:
             return datetime.fromisoformat(value["__datetime__"])

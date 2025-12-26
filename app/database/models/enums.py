@@ -1,3 +1,5 @@
+import inspect
+import sys
 from enum import Enum
 
 
@@ -37,3 +39,10 @@ class AccessRoleEnum(Enum):
     OWNER = "owner"
     EDITOR = "editor"
     VIEWER = "viewer"
+
+
+_current_module = sys.modules[__name__]
+db_enums = [
+    obj for name, obj in inspect.getmembers(_current_module)
+    if inspect.isclass(obj) and issubclass(obj, Enum) and obj.__module__ == __name__
+]

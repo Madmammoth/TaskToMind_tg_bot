@@ -3,8 +3,7 @@ from datetime import datetime, date
 import pytest
 
 from app.database.models import GenderEnum, LevelEnum, SystemListTypeEnum
-from app.utils.serialization import to_dialog_safe, from_dialog_safe, \
-    generate_enum_map
+from app.utils.serialization import to_dialog_safe, from_dialog_safe
 
 
 def test_to_dialog_safe_enum_positive():
@@ -169,32 +168,3 @@ def test_from_dialog_safe_non_dict_non_list_non_basic():
     assert from_dialog_safe(123) == 123
     assert from_dialog_safe("text") == "text"
     assert from_dialog_safe(None) is None
-
-
-def test_generate_enum_map(tmp_path):
-    """Dynamically create a module, import it and scan enums."""
-
-    module_file = tmp_path / "enums_test_module.py"
-    module_file.write_text("""
-from enum import Enum
-
-class A(Enum):
-    X = 1
-    Y = 2
-
-class B(Enum):
-    Z = 3
-
-value = 10
-""")
-
-    import sys
-    sys.path.insert(0, str(tmp_path))
-
-    enum_map = generate_enum_map("enums_test_module")
-    assert enum_map == {
-        "A": enum_map["A"],
-        "B": enum_map["B"]
-    }
-
-    sys.path.pop(0)
