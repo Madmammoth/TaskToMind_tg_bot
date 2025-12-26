@@ -44,7 +44,7 @@ class MockButton:
         self.widget_id = widget_id
         self.text = MockText(text)
 
-    async def render_text(self, data, manager):
+    async def render_text(self, data, manager):  # noqa
         return self.text or ""
 
 
