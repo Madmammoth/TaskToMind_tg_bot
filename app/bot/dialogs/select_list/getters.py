@@ -1,6 +1,5 @@
 import logging
 
-from aiogram.types import User
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
@@ -15,11 +14,10 @@ logger = logging.getLogger(__name__)
 
 async def lists_getter_core(
         dialog_manager: DialogManager,
-        event_from_user: User,
         di_session: FromDishka[AsyncSession],
         **_kwargs,
 ) -> dict:
-    user_id = event_from_user.id
+    user_id = dialog_manager.event.from_user.id
     mode = ListSelectionMode(dialog_manager.start_data["mode"])
     logger.debug("Получение списков пользователя id=%d в режиме mode=%r", user_id, mode)
 
