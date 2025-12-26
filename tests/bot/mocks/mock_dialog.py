@@ -46,3 +46,14 @@ class MockButton:
 
     async def render_text(self, data, manager):
         return self.text or ""
+
+
+class FakeSelectListScenario:
+    def __init__(self, buttons, lists):
+        self._buttons = buttons
+        self._lists = lists
+        self.called_with = None
+
+    async def get_lists(self, *, session, dialog_manager):
+        self.called_with = (session, dialog_manager)
+        return self._buttons, self._lists
