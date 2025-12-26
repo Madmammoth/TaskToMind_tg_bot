@@ -12,8 +12,7 @@ from app.utils.serialization import to_dialog_safe
 logger = logging.getLogger(__name__)
 
 
-@inject
-async def lists_getter(
+async def lists_getter_core(
         dialog_manager: DialogManager,
         event_from_user: User,
         di_session: FromDishka[AsyncSession],
@@ -34,3 +33,6 @@ async def lists_getter(
     dialog_manager.dialog_data["lists"] = to_dialog_safe(lists)
 
     return {"buttons": buttons}
+
+
+lists_getter = inject(lists_getter_core)

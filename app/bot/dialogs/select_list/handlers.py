@@ -4,6 +4,8 @@ from typing import cast
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager, SubManager
 from aiogram_dialog.widgets.kbd import Button
+from dishka import FromDishka
+from dishka.integrations.aiogram_dialog import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.orchestration.task import change_list_for_task_with_log
@@ -12,10 +14,11 @@ from app.utils.serialization import from_dialog_safe
 logger = logging.getLogger(__name__)
 
 
-async def select_list(
+async def select_list_core(
         callback: CallbackQuery,
         _widget: Button,
         dialog_manager: DialogManager,
+        session: FromDishka[AsyncSession],
 ):
     sub_manager = cast(SubManager, dialog_manager)
     dialog_manager = sub_manager.manager
@@ -48,4 +51,4 @@ async def select_list(
     }
     logger.debug("selected_list_data=%s", selected_list_data)
 
-    await dialog_manager.done(selected_list_data)
+select_list = inject(select_list_core)
