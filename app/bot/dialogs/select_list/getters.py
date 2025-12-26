@@ -6,7 +6,8 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.orchestration.list_selection import STRATEGIES, ListSelectionMode
+from app.bot.dialogs.enums import ListSelectionMode
+from app.bot.dialogs.select_list.scenarios import get_select_list_scenario
 from app.utils.serialization import to_dialog_safe
 
 logger = logging.getLogger(__name__)
@@ -16,22 +17,24 @@ async def lists_getter_core(
         dialog_manager: DialogManager,
         event_from_user: User,
         di_session: FromDishka[AsyncSession],
-        **_kwargs
+        **_kwargs,
 ) -> dict:
     user_id = event_from_user.id
-    session = di_session
-    logger.debug("Получение списков пользователя id=%d", user_id)
-    mode = ListSelectionMode(dialog_manager.start_data.get("mode"))
+    mode = ListSelectionMode(dialog_manager.start_data["mode"])
+    logger.debug("Получение списков пользователя id=%d в режиме mode=%r", user_id, mode)
 
-    if mode is None:
-        raise ValueError("Missing required start_data: mode")
+    scenario = get_select_list_scenario(mode)
 
-    strategy = STRATEGIES[mode]
-
-    buttons, lists = await strategy.get_lists(session, user_id)
+    buttons, lists = await scenario.get_lists(
+        session=di_session,
+        dialog_manager=dialog_manager,
+    )
 
     dialog_manager.dialog_data["lists"] = to_dialog_safe(lists)
-
+    logger.debug(
+        "Для пользователя id=%d в режиме mode=%r получены buttons=%r, lists=%r",
+        user_id, mode, buttons, lists
+    )
     return {"buttons": buttons}
 
 
