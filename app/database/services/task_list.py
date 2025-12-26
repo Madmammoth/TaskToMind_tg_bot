@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from typing import Any, Sequence
+from typing import Any, Sequence, Callable
 
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
