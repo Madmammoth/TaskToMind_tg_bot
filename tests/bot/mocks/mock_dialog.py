@@ -1,11 +1,13 @@
 from typing import Any
 
+from tests.bot.mocks.mock_aiogram import FakeEvent
 
 
 class FakeDialogManager:
     def __init__(self):
         self.start_data: dict[str, Any] | None = None
         self.dialog_data: dict[str, Any] = {}
+        self.event = FakeEvent()
         self.middleware_data: dict[str, Any] = {}
         self.result: Any = None
         self.finished: bool = False

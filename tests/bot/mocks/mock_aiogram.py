@@ -21,6 +21,16 @@ class MockBot:
         })
 
 
+class FakeUser:
+    def __init__(self, user_id: int):
+        self.id = user_id
+
+
+class FakeEvent:
+    def __init__(self):
+        self.from_user = FakeUser(42)
+
+
 class MockMessage(Message):
     def __init__(self, message_id: int, text: str):
         super().__init__(
