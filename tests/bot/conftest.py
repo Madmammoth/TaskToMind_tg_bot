@@ -10,7 +10,7 @@ def fake_dialog_manager():
 
 @pytest.fixture
 def mock_message():
-    return MockMessage(message_id=10, text="Test task")
+    return MockMessage(message_id=10, text="Test task\nTest description")
 
 
 @pytest.fixture
