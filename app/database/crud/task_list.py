@@ -1,7 +1,7 @@
 import logging
 from typing import Sequence
 
-from sqlalchemy import select, Row, func, and_, delete
+from sqlalchemy import select, Row, func, and_, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import TaskList, ListAccess, AccessRoleEnum, TaskInList
@@ -259,3 +259,30 @@ async def get_previous_list_id(
         previous_list_id, task_id
     )
     return previous_list_id
+
+
+async def change_parent_list(
+        session: AsyncSession,
+        list_id: int,
+        new_parent_list_id: int,
+):
+    logger.debug(
+        "Изменение у списка id=%d родительского списка на id=%d",
+        list_id, new_parent_list_id
+    )
+
+    stmt = (
+        update(TaskList)
+        .where(
+            TaskList.list_id == list_id,
+        )
+        .values(
+            parent_list_id=new_parent_list_id,
+            updated_at=func.now(),
+        )
+    )
+    await session.execute(stmt)
+    logger.debug(
+        "Изменён у списка id=%d родительский список с id=%d на id=%d",
+        list_id, new_parent_list_id
+    )

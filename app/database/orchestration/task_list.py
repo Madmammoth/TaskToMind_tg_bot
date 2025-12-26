@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.crud.stats import update_stats_on_list_deleted
-from app.database.crud.task_list import db_delete_list
+from app.database.crud.task_list import db_delete_list, change_parent_list
 from app.database.crud.tracking import log_activity
 from app.database.services.task_list import (
     db_add_list,
@@ -69,4 +69,48 @@ async def delete_list_with_stats_log(
             action="delete_list",
             success=False,
             user_id=user_id,
+        )
+
+
+async def change_parent_list_with_log(
+        session: AsyncSession,
+        user_id: int,
+        list_id: int,
+        old_parent_list_id: int | None,
+        new_parent_list_id: int,
+):
+    logger.debug(
+        "Обновление базы данны при изменении для пользователя id=%d "
+        "у списка id=%d родительского списка с id=%r на id=%d",
+        user_id, list_id, old_parent_list_id, new_parent_list_id
+    )
+    try:
+        await change_parent_list(session, list_id, new_parent_list_id)
+        await log_activity(
+            session,
+            action="change_parent_list",
+            success=True,
+            user_id=user_id,
+            list_id=list_id,
+            old_value=old_parent_list_id,
+            new_value=new_parent_list_id,
+        )
+        logger.debug(
+            "Обновлена база данных при изменении для пользователя id=%d "
+            "у списка id=%d родительского списка с id=%r на id=%d",
+            user_id, list_id, old_parent_list_id, new_parent_list_id
+        )
+    except Exception as e:
+        logger.exception(
+            "Ошибка при обновлении базы данных при изменении для "
+            "пользователя id=%d у списка id=%d родительского списка с id=%r на id=%d: %s",
+            user_id, list_id, old_parent_list_id, new_parent_list_id, e
+        )
+        await log_activity(
+            session,
+            action="change_parent_list",
+            success=False,
+            user_id=user_id,
+            list_id=list_id,
+            old_value=old_parent_list_id,
         )
