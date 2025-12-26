@@ -18,7 +18,6 @@ class CreateTaskStartData(BaseModel):
     priority_label: str
     urgency: dict[str, str]
     urgency_label: str
-    mode: str
 
 
 @pytest.mark.asyncio
@@ -31,7 +30,6 @@ async def test_with_correct_data(fake_dialog_manager, mock_callback):
 
     await go_create_task(mock_callback, btn, fake_dialog_manager)  # noqa
 
-    assert dm.start_data["mode"] == "create_task"
     assert fake_dialog_manager.last_state == CreateTaskDialogSG.add_task_window
     assert fake_dialog_manager.start_data["message_id"] == 777
     assert fake_dialog_manager.start_data["task_title"] == "Новая задача"
