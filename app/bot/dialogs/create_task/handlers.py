@@ -1,8 +1,8 @@
 import logging
-from typing import cast, Any
+from typing import Any
 
 from aiogram.types import CallbackQuery, Message
-from aiogram_dialog import DialogManager, ShowMode, SubManager
+from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -96,35 +96,6 @@ async def go_save_yes(
     await dialog_manager.done(
         result={"1": "1"},
         show_mode=ShowMode.DELETE_AND_SEND
-    )
-
-
-async def select_list(
-        callback: CallbackQuery,
-        _widget: Button,
-        dialog_manager: DialogManager,
-):
-    logger.debug("Установка списка задач...")
-    sub_manager = cast(SubManager, dialog_manager)
-    dialog_manager = sub_manager.manager
-    list_id = sub_manager.item_id
-    logger.debug("Нажата кнопка для item_id=%s", list_id)
-    lists = dialog_manager.dialog_data.get("lists", {})
-    list_title = lists.get(list_id)
-    if not list_title:
-        await callback.answer("Ошибка: список не найден.")
-        return
-    dialog_manager.dialog_data.update({
-        "list_id": list_id,
-        "list_title": list_title,
-    })
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    await callback.answer(f"Выбран список: {list_title}")
-    await dialog_manager.switch_to(state=CreateTaskDialogSG.add_task_window)
-    logger.debug(
-        "Установлен список задач id=%s, title=%s",
-        list_id, list_title
     )
 
 
