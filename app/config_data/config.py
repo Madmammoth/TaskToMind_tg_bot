@@ -80,6 +80,3 @@ def load_config(path: str | None = None) -> Config:
             format=env("LOG_FORMAT")
         ),
     )
-
-
-DEV_MODE = True
