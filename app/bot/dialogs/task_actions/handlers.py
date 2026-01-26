@@ -5,6 +5,7 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.dialogs.enums import ListSelectionMode
 from app.bot.dialogs.states import TaskActionsDialogSG, SelectListDialogSG
 from app.database.orchestration.task import (
     complete_task_with_stats_achievs_log,
@@ -149,24 +150,22 @@ async def go_not_cancel_yes(
     )
 
 
-async def select_list(
+async def go_to_list_selection(
         callback: CallbackQuery,
         _widget: Button,
         dialog_manager: DialogManager,
 ):
     user_id = callback.from_user.id
-    logger.debug(
-        "Переход пользователя id=%d к выбору списка из редактирования задачи",
-        user_id
-    )
-    task_id = dialog_manager.dialog_data.get("task_id")
-    selected_list_id = dialog_manager.dialog_data.get("selected_list_id")
+    logger.debug("Переход пользователя id=%d к выбору списка при редактировании задачи", user_id)
     data = {
-        "mode": "task_action",
-        "task_id": task_id,
-        "selected_list_id": selected_list_id,
+        "mode": ListSelectionMode.EDIT_TASK.value,
+        "task_id": dialog_manager.dialog_data["task_id"],
+        "list_id": dialog_manager.dialog_data["selected_list_id"],
     }
-    logger.debug("task_id=%d, selected_list_id=%d", task_id, selected_list_id)
+    logger.debug(
+        "Запуск пользователем id=%d диалога выбора списка с data=%r",
+        user_id, data,
+    )
     await dialog_manager.start(
         state=SelectListDialogSG.select_list_window,
         data=data,

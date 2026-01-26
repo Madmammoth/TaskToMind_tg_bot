@@ -20,11 +20,11 @@ from app.bot.dialogs.states import TaskActionsDialogSG, StartSG
 from app.bot.dialogs.task_actions.getters import get_task
 from app.bot.dialogs.task_actions.handlers import (
     go_complete_yes,
-    postpone,
     go_not_complete_yes,
     go_cancel_yes,
     go_not_cancel_yes,
-    select_list,
+    go_to_list_selection,
+    postpone,
 )
 
 task_actions_dialog = Dialog(
@@ -209,7 +209,7 @@ task_actions_dialog = Dialog(
         Button(
             text=Const("Список"),
             id="select_list",
-            on_click=select_list,
+            on_click=go_to_list_selection,
         ),
         SwitchTo(
             text=Const("Приоритет"),
