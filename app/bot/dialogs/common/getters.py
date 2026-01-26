@@ -1,10 +1,12 @@
 import logging
 
 from aiogram_dialog import DialogManager
+from dishka import FromDishka
+from dishka.integrations.aiogram_dialog import inject
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.crud.task_list import fetch_user_lists_raw
-from app.database.models import User
-from app.database.services.task_list import build_ordered_hierarchy
+from app.bot.dialogs.enums import ListSelectionMode
+from app.bot.dialogs.select_list.scenarios import get_select_list_scenario
 from app.utils.serialization import from_dialog_safe, to_dialog_safe
 
 logger = logging.getLogger(__name__)
@@ -19,22 +21,29 @@ async def get_dialog_data(
     return data
 
 
-async def get_lists(
+async def get_lists_core(
         dialog_manager: DialogManager,
-        event_from_user: User,
+        di_session: FromDishka[AsyncSession],
         **_kwargs
 ) -> dict:
-    logger.debug("Получение списков пользователя...")
-    user_id = event_from_user.id
-    logger.debug("...id=%d", user_id)
-    session = dialog_manager.middleware_data["session"]
-    mode = dialog_manager.dialog_data.get("mode", "default")
-    rows = await fetch_user_lists_raw(session, user_id, mode)
-    list_buttons = build_ordered_hierarchy(rows)
-    lists = {lst["list_id"]: lst["list_title"] for lst in list_buttons}
+    user_id = dialog_manager.event.from_user.id
+    mode = ListSelectionMode(dialog_manager.start_data["mode"])
+    logger.debug("Получение списков пользователя id=%d в режиме mode=%r", user_id, mode)
+
+    scenario = get_select_list_scenario(mode)
+
+    buttons, lists = await scenario.get_lists(
+        session=di_session,
+        dialog_manager=dialog_manager
+    )
+
     dialog_manager.dialog_data["lists"] = to_dialog_safe(lists)
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    logger.debug("Получившийся список для кнопок:")
-    logger.debug(list_buttons)
-    return {"lists": list_buttons}
+
+    logger.debug(
+        "Для пользователя id=%d в режиме mode=%r получены buttons=%r, lists=%r",
+        user_id, mode, buttons, lists
+    )
+    return {"lists": buttons}
+
+
+get_lists = inject(get_lists_core)
