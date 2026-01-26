@@ -27,7 +27,7 @@ class CreateTaskDialogSG(StatesGroup):
 
 class TaskActionsDialogSG(StatesGroup):
     main_task_window = State()
-    main_task_window_2 = State()
+    edit_task_window = State()
     share_task_window = State()
     checklist_window = State()
     complete_task_window = State()

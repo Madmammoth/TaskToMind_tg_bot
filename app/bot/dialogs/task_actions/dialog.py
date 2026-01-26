@@ -253,7 +253,7 @@ task_actions_dialog = Dialog(
             mode=StartMode.RESET_STACK,
         ),
         getter=get_dialog_data,
-        state=TaskActionsDialogSG.main_task_window_2,
+        state=TaskActionsDialogSG.edit_task_window,
     ),
     WindowWithoutInput(
         Const("Завершить задачу?\n"),
