@@ -58,7 +58,7 @@ async def get_list_title_to_delete(
     logger.debug("Апдейт здесь")
     logger.debug("Словарь dialog_data:")
     logger.debug(dialog_manager.dialog_data)
-    list_id = dialog_manager.dialog_data.get("list_id")
+    list_id = dialog_manager.dialog_data["selected_list_id"]
     lists = from_dialog_safe(dialog_manager.dialog_data["lists"])
     list_title = lists[list_id]
     return {"list_title": list_title}
