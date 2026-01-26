@@ -39,7 +39,7 @@ class CreateTaskScenario(SelectListScenario):
         rows = await fetch_user_lists_raw(session, user_id)
 
         def is_hidden(row):
-            return row.system_type in {SystemListTypeEnum.INBOX, SystemListTypeEnum.ARCHIVE}
+            return row.system_type in {SystemListTypeEnum.TRASH, SystemListTypeEnum.ARCHIVE}
 
         return build_ordered_hierarchy(rows, is_hidden=is_hidden)
 
@@ -59,10 +59,8 @@ class EditTaskScenario(SelectListScenario):
         rows = await fetch_user_lists_raw(session, user_id)
 
         def is_hidden(row):
-            return (
-                    row.system_type == SystemListTypeEnum.ARCHIVE
-                    or row.list_id == old_list_id
-            )
+            return (row.system_type in {SystemListTypeEnum.TRASH, SystemListTypeEnum.ARCHIVE}
+                    or row.list_id == old_list_id)
 
         return build_ordered_hierarchy(rows, is_hidden=is_hidden)
 
@@ -89,7 +87,11 @@ class CreateListScenario(SelectListScenario):
         rows = await fetch_user_lists_raw(session, user_id)
 
         def is_hidden(row):
-            return row.system_type in {SystemListTypeEnum.INBOX, SystemListTypeEnum.ARCHIVE}
+            return row.system_type in {
+                SystemListTypeEnum.TRASH,
+                SystemListTypeEnum.INBOX,
+                SystemListTypeEnum.ARCHIVE,
+            }
 
         return build_ordered_hierarchy(rows, is_hidden=is_hidden)
 
@@ -110,10 +112,13 @@ class EditListScenario(SelectListScenario):
         rows = await fetch_user_lists_raw(session, user_id)
 
         def is_hidden(row):
-            return (
-                    row.system_type in {SystemListTypeEnum.INBOX, SystemListTypeEnum.ARCHIVE}
-                    or row.list_id in {current_list_id, old_parent_list_id}
-            )
+            is_system = row.system_type in {
+                SystemListTypeEnum.TRASH,
+                SystemListTypeEnum.INBOX,
+                SystemListTypeEnum.ARCHIVE,
+            }
+            is_current = row.list_id in {current_list_id, old_parent_list_id}
+            return is_system or is_current
 
         return build_ordered_hierarchy(rows, is_hidden=is_hidden)
 

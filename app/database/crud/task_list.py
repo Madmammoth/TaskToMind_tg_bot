@@ -60,7 +60,6 @@ async def fetch_user_lists_raw(
         )
         .join(ListAccess, ListAccess.list_id == TaskList.list_id)
         .where(ListAccess.user_id == user_id)
-        .where(ListAccess.position != 0)
     )
 
     return (await session.execute(stmt)).all()
