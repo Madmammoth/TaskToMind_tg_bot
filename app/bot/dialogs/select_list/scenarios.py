@@ -143,10 +143,23 @@ class EditListScenario(SelectListScenario):
         }
 
 
+class ViewAllListsScenario(SelectListScenario):
+    async def get_lists(self, *, session, dialog_manager):
+        user_id = dialog_manager.event.from_user.id
+
+        rows = await fetch_user_lists_raw(session, user_id)
+
+        def is_hidden(row):
+            return row.system_type == SystemListTypeEnum.TRASH
+
+        return build_ordered_hierarchy(rows, is_hidden=is_hidden)
+
+
 def get_select_list_scenario(mode: ListSelectionMode) -> SelectListScenario:
     return {
         ListSelectionMode.CREATE_TASK: CreateTaskScenario(mode),
         ListSelectionMode.EDIT_TASK: EditTaskScenario(mode),
         ListSelectionMode.CREATE_LIST: CreateListScenario(mode),
         ListSelectionMode.EDIT_LIST: EditListScenario(mode),
+        ListSelectionMode.VIEW_ALL_LISTS: ViewAllListsScenario(mode),
     }[mode]

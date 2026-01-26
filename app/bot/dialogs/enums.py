@@ -6,3 +6,4 @@ class ListSelectionMode(StrEnum):
     EDIT_TASK = "edit_task"
     CREATE_LIST = "create_list"
     EDIT_LIST = "edit_list"
+    VIEW_ALL_LISTS = "view_all_lists"

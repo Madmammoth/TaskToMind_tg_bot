@@ -6,6 +6,7 @@ from app.bot.dialogs.common.handlers import (
     update_dialog_data_from_start
 )
 from app.bot.dialogs.components import WindowWithInput, WindowWithoutInput
+from app.bot.dialogs.enums import ListSelectionMode
 from app.bot.dialogs.start.handlers import (
     go_create_task,
     go_create_list,
@@ -44,6 +45,7 @@ start_dialog = Dialog(
             text=Const("Управление списками"),
             id="task_lists_management",
             state=ListsManagementDialogSG.main_lists_window,
+            data={"mode": ListSelectionMode.VIEW_ALL_LISTS.value},
         ),
         # Row(
         #     Button(
