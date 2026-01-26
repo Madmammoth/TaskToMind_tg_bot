@@ -70,11 +70,12 @@ async def test_create_task_scenario_get_lists(
         )
 
     assert buttons == [
+        {"list_id": 1, "list_title": "Inbox", "pos": "1."},
         {"list_id": 3, "list_title": "Work", "pos": "3."},
         {"list_id": 5, "list_title": "Buy", "pos": "3.1."},
         {"list_id": 4, "list_title": "Home", "pos": "4."},
     ]
-    assert lists == {3: "Work", 4: "Home", 5: "Buy"}
+    assert lists == {1: "Inbox", 3: "Work", 4: "Home", 5: "Buy"}
 
 
 @pytest.mark.asyncio
