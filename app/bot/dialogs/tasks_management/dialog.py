@@ -10,7 +10,7 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Const, Format
 
-from app.bot.dialogs.common.handlers import combine_result_with_dialog_data
+from app.bot.dialogs.common.handlers import update_dialog_data_from_result
 from app.bot.dialogs.components import WindowWithInput
 from app.bot.dialogs.states import TasksManagementDialogSG, CreateTaskDialogSG
 from app.bot.dialogs.tasks_management.getters import (
@@ -113,5 +113,5 @@ tasks_management_dialog = Dialog(
         getter = get_tasks_in_archive,
         state = TasksManagementDialogSG.archive_window,
     ),
-    on_process_result=combine_result_with_dialog_data,
+    on_process_result=update_dialog_data_from_result,
 )

@@ -31,7 +31,7 @@ async def go_pass(
     await callback.answer("Эта кнопка пока не работает")
 
 
-async def combine_result_with_dialog_data(
+async def update_dialog_data_from_result(
         _start_data,
         result: dict,
         dialog_manager: DialogManager
