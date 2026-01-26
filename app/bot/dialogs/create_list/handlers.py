@@ -1,8 +1,7 @@
 import logging
-from typing import cast
 
 from aiogram.types import Message, CallbackQuery
-from aiogram_dialog import DialogManager, ShowMode, SubManager
+from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Button
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +32,6 @@ async def correct_title_list_input(
     dialog_manager.dialog_data.update({
         "message_id": str(message.message_id),
         "new_list_title": list_title,
-        "mode": "create_list",
     })
     await dialog_manager.switch_to(
         state=CreateListDialogSG.add_list_window,
@@ -85,20 +83,20 @@ async def go_save_new_list(
     logger.debug("Сохранение списка задач")
     session: AsyncSession = dialog_manager.middleware_data["session"]
     user_id = callback.from_user.id
-    message_id = int(dialog_manager.dialog_data["message_id"])
+    message_id = dialog_manager.dialog_data["message_id"]
     list_id = await add_list_with_stats_achievs_log(
         session=session,
         user_id=user_id,
         list_data=dialog_manager.dialog_data,
     )
     list_title = dialog_manager.dialog_data.get("new_list_title")
-    in_list_id = dialog_manager.dialog_data.get("in_list_id")
-    in_list_title = dialog_manager.dialog_data.get("in_list_title")
+    selected_list_id = dialog_manager.dialog_data.get("selected_list_id")
+    selected_list_title = dialog_manager.dialog_data.get("selected_list_title")
     result = {
         "list_id": list_id,
         "list_title": list_title,
-        "in_list_id": in_list_id,
-        "in_list_title": in_list_title,
+        "selected_list_id": selected_list_id,
+        "selected_list_title": selected_list_title,
     }
     logger.debug("result=%s", result)
     await callback.bot.send_message(
@@ -118,8 +116,8 @@ async def clear_in_list(
         dialog_manager: DialogManager
 ):
     logger.debug("Возврат статуса корневого списка для нового списка")
-    dialog_manager.dialog_data.update({"in_list_id": None,
-                                       "in_list_title": None})
+    dialog_manager.dialog_data.update({"selected_list_id": None,
+                                       "selected_list_title": None})
 
 
 async def go_cancel_yes(
@@ -135,28 +133,3 @@ async def go_cancel_yes(
         reply_to_message_id=message_id,
     )
     await dialog_manager.done(show_mode=ShowMode.DELETE_AND_SEND)
-
-
-async def select_list(
-        callback: CallbackQuery,
-        _widget: Button,
-        dialog_manager: DialogManager,
-):
-    logger.debug("Выбор родительского списка...")
-    sub_manager = cast(SubManager, dialog_manager)
-    dialog_manager = sub_manager.manager
-    list_id = sub_manager.item_id
-    logger.debug("Нажата кнопка для item_id=%s", list_id)
-    lists = dialog_manager.dialog_data.get("lists", {})
-    dialog_manager.dialog_data.update({"in_list_id": str(list_id),
-                                       "in_list_title": lists[list_id]})
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
-    await callback.answer(f"Выбран список: {lists[list_id]}")
-    await dialog_manager.switch_to(
-        state=CreateListDialogSG.add_list_window
-    )
-    logger.debug(
-        "Установлен список задач id=%s, title=%s",
-        list_id, lists[list_id]
-    )
