@@ -87,7 +87,7 @@ async def go_delete_list_yes(
     logger.debug("Удаление списка задач")
     session: AsyncSession = dialog_manager.middleware_data["session"]
     user_id = callback.from_user.id
-    list_id = dialog_manager.dialog_data.get("list_id")
+    list_id = dialog_manager.dialog_data.get("selected_list_id")
     if not list_id:
         logger.debug("Не найден list_id в dialog_data")
         await callback.answer("Список не найден")

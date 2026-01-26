@@ -79,7 +79,7 @@ async def db_add_list(
     :return: присвоенный list_id списка задач
     """
     try:
-        parent_id = list_data.get("in_list_id")
+        parent_id = list_data.get("selected_list_id")
         if parent_id:
             parent_id = int(parent_id)
 
@@ -100,7 +100,7 @@ async def db_add_list(
 
         await session.commit()
         logger.debug(
-            "Добавлен список задач id=%d пользователю id=%d",
+            "Добавлен список задач id=%d пользователем id=%d",
             task_list.list_id, user_id
         )
     except Exception as e:
@@ -111,7 +111,7 @@ async def db_add_list(
 
     await session.commit()
     logger.debug(
-        "Список задач id=%d добавлен пользователю id=%d "
+        "Список задач id=%d добавлен пользователем id=%d "
         "(parent_list_id=%s, position=%d)",
         task_list.list_id, user_id, parent_id, position,
     )

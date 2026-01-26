@@ -79,7 +79,7 @@ async def complete_task_with_stats_achievs_log(
     task_id = task_data.get("task_id")
     try:
         await complete_task(session, task_id)
-        list_id = task_data.get("list_id")
+        list_id = task_data.get("selected_list_id")
         archive_list_id = await get_user_archive_list_id(session, user_id)
         await change_list_for_task(session, task_id, list_id, archive_list_id)
         await update_users_stats_achievs_on_task_completed(session, task_data)
@@ -122,16 +122,14 @@ async def not_complete_task_with_stats_achievs_log(
     :param task_data: параметры возвращаемой в работу задачи
     :return: None
     """
-    logger.debug(
-        "Обновление базы данных при возвращении "
-        "пользователем id=%d в работу задачи...",
-        user_id
-    )
     task_id = task_data.get("task_id")
-    logger.debug("...id=%d", task_id)
+    logger.debug(
+        "Обновление базы данных при возвращении пользователем id=%d в работу задачи id=%d",
+        user_id, task_id,
+    )
     try:
         await not_complete_task(session, task_id)
-        list_id = task_data.get("list_id")
+        list_id = task_data.get("selected_list_id")
         previous_list_id = await get_previous_list_id(
             session, task_id, list_id
         )
@@ -185,7 +183,7 @@ async def cancel_task_with_stats_achievs_log(
     logger.debug("...id=%d", task_id)
     try:
         await cancel_task(session, task_id)
-        list_id = task_data.get("list_id")
+        list_id = task_data.get("selected_list_id")
         trash_list_id = await get_user_trash_list_id(session, user_id)
         await change_list_for_task(session, task_id, list_id, trash_list_id)
         await update_users_stats_achievs_on_task_canceled(session, task_data)
@@ -243,7 +241,7 @@ async def not_cancel_task_with_stats_achievs_log(
     logger.debug("...id=%d", task_id)
     try:
         await not_cancel_task(session, task_id)
-        list_id = task_data.get("list_id")
+        list_id = task_data.get("selected_list_id")
         previous_list_id = await get_previous_list_id(
             session, task_id, list_id
         )
