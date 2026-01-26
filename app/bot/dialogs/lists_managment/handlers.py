@@ -92,7 +92,7 @@ async def go_delete_list_yes(
         logger.debug("Не найден list_id в dialog_data")
         await callback.answer("Список не найден")
         return
-    lists = dialog_manager.dialog_data.get("lists")
+    lists = from_dialog_safe(dialog_manager.dialog_data["lists"])
     if not lists:
         logger.debug("Не найдены списки пользователя в dialog_data")
         await callback.answer("Списки не найдены")

@@ -34,7 +34,7 @@ async def go_priority(
     priority_text = await widget.text.render_text(
         data=dialog_manager.dialog_data, manager=dialog_manager
     )
-    dialog_manager.dialog_data["priority"] = priority_enum
+    dialog_manager.dialog_data["priority"] = to_dialog_safe(priority_enum)
     dialog_manager.dialog_data["priority_label"] = (
         PRIORITY_LABELS.get(priority_enum)
     )
@@ -60,7 +60,7 @@ async def go_urgency(
     urgency_text = await widget.text.render_text(
         data=dialog_manager.dialog_data, manager=dialog_manager
     )
-    dialog_manager.dialog_data["urgency"] = urgency_enum
+    dialog_manager.dialog_data["urgency"] = to_dialog_safe(urgency_enum)
     dialog_manager.dialog_data["urgency_label"] = (
         URGENCY_LABELS.get(urgency_enum)
     )
