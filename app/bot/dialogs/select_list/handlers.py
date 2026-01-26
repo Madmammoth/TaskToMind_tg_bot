@@ -25,7 +25,10 @@ async def select_list_core(
     list_id = int(sub_manager.item_id)
     user_id = callback.from_user.id
     mode = ListSelectionMode(dialog_manager.start_data["mode"])
-    logger.debug("Выбор списка id=%d пользователем id=%d в режиме mode=%r", list_id, user_id, mode)
+    logger.debug(
+        "Выбор списка id=%d пользователем id=%d в режиме mode=%r",
+        list_id, user_id, mode.value,
+    )
 
     scenario = get_select_list_scenario(mode)
 
@@ -37,6 +40,10 @@ async def select_list_core(
 
     await dialog_manager.done(result)
 
-    logger.debug("Пользователем id=%d в режиме mode=%r выбран список с result=%r", user_id, result)
+    logger.debug(
+        "Пользователем id=%d в режиме mode=%r выбран список с result=%r",
+        user_id, mode.value, result,
+    )
+
 
 select_list = inject(select_list_core)

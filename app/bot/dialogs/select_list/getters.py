@@ -19,7 +19,10 @@ async def lists_getter_core(
 ) -> dict:
     user_id = dialog_manager.event.from_user.id
     mode = ListSelectionMode(dialog_manager.start_data["mode"])
-    logger.debug("Получение списков пользователя id=%d в режиме mode=%r", user_id, mode)
+    logger.debug(
+        "Получение списков пользователя id=%d в режиме mode=%r",
+        user_id, mode.value,
+    )
 
     scenario = get_select_list_scenario(mode)
 
@@ -31,7 +34,7 @@ async def lists_getter_core(
     dialog_manager.dialog_data["lists"] = to_dialog_safe(lists)
     logger.debug(
         "Для пользователя id=%d в режиме mode=%r получены buttons=%r, lists=%r",
-        user_id, mode, buttons, lists
+        user_id, mode.value, buttons, lists
     )
     return {"buttons": buttons}
 

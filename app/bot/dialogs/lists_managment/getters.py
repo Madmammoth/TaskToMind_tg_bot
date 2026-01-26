@@ -55,10 +55,16 @@ async def get_list_title_to_delete(
         dialog_manager: DialogManager,
         **_kwargs
 ) -> dict:
-    logger.debug("Апдейт здесь")
-    logger.debug("Словарь dialog_data:")
-    logger.debug(dialog_manager.dialog_data)
+    user_id = dialog_manager.event.from_user.id
+    logger.debug(
+        "Получение пользователем id=%d из dialog_data=%r наименования списка перед удалением",
+        user_id, dialog_manager.dialog_data,
+    )
     list_id = dialog_manager.dialog_data["selected_list_id"]
     lists = from_dialog_safe(dialog_manager.dialog_data["lists"])
     list_title = lists[list_id]
+    logger.debug(
+        "Пользователем id=%d получено наименование списка id=%d: %r",
+        user_id, list_id, list_title,
+    )
     return {"list_title": list_title}
