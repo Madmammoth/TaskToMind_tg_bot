@@ -211,36 +211,36 @@ task_actions_dialog = Dialog(
             id="select_list",
             on_click=go_to_list_selection,
         ),
-        SwitchTo(
-            text=Const("Приоритет"),
-            id="priority",
-            state=TaskActionsDialogSG.task_priority_window,
-        ),
-        SwitchTo(
-            text=Const("Срочность"),
-            id="urgency",
-            state=TaskActionsDialogSG.task_urgency_window,
-        ),
-        SwitchTo(
-            text=Const("Напомнить"),
-            id="remind",
-            state=TaskActionsDialogSG.task_remind_window,
-        ),
-        SwitchTo(
-            text=Const("Время на задачу"),
-            id="duration",
-            state=TaskActionsDialogSG.task_duration_window,
-        ),
-        SwitchTo(
-            text=Const("Срок выполнения"),
-            id="deadline",
-            state=TaskActionsDialogSG.task_deadline_window,
-        ),
-        SwitchTo(
-            text=Const("Повторять"),
-            id="recurrence",
-            state=TaskActionsDialogSG.task_recurrence_window,
-        ),
+        # SwitchTo(
+        #     text=Const("Приоритет"),
+        #     id="priority",
+        #     state=TaskActionsDialogSG.task_priority_window,
+        # ),
+        # SwitchTo(
+        #     text=Const("Срочность"),
+        #     id="urgency",
+        #     state=TaskActionsDialogSG.task_urgency_window,
+        # ),
+        # SwitchTo(
+        #     text=Const("Напомнить"),
+        #     id="remind",
+        #     state=TaskActionsDialogSG.task_remind_window,
+        # ),
+        # SwitchTo(
+        #     text=Const("Время на задачу"),
+        #     id="duration",
+        #     state=TaskActionsDialogSG.task_duration_window,
+        # ),
+        # SwitchTo(
+        #     text=Const("Срок выполнения"),
+        #     id="deadline",
+        #     state=TaskActionsDialogSG.task_deadline_window,
+        # ),
+        # SwitchTo(
+        #     text=Const("Повторять"),
+        #     id="recurrence",
+        #     state=TaskActionsDialogSG.task_recurrence_window,
+        # ),
         Back(
             text=Const("Управлять"),
             id="manage",
