@@ -809,9 +809,9 @@ def upgrade() -> None:
     sa.Column('extra', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('success', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['list_id'], ['lists.list_id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['task_id'], ['tasks.task_id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['list_id'], ['lists.list_id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['task_id'], ['tasks.task_id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('log_id')
     )
     op.create_table('reminders',

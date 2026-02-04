@@ -48,17 +48,17 @@ class ActivityLog(Base, make_timestamp_mixin(include_updated=False)):
     log_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int | None] = mapped_column(
         BigInteger,
-        ForeignKey("users.telegram_id", ondelete="CASCADE"),
+        ForeignKey("users.telegram_id", ondelete="SET NULL"),
         nullable=True,
     )
     task_id: Mapped[int | None] = mapped_column(
         Integer,
-        ForeignKey("tasks.task_id", ondelete="CASCADE"),
+        ForeignKey("tasks.task_id", ondelete="SET NULL"),
         nullable=True,
     )
     list_id: Mapped[int | None] = mapped_column(
         Integer,
-        ForeignKey("lists.list_id", ondelete="CASCADE"),
+        ForeignKey("lists.list_id", ondelete="SET NULL"),
         nullable=True,
     )
     action: Mapped[str] = mapped_column(String(50), nullable=False)
