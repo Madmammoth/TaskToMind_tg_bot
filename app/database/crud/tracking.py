@@ -22,16 +22,12 @@ async def log_activity(
     :param kwargs: дополнительные сведения о действии
     :return: None
     """
+    logger.debug("Запись лога action=%s", action)
     data = filter_kwargs(ActivityLog, kwargs)
-    try:
-        log_entry = ActivityLog(
-            action=action,
-            success=success,
-            **data,
-        )
-        session.add(log_entry)
-        await session.commit()
-        logger.debug("Successfully write activity log (%s)", action)
-    except Exception as e:
-        logger.exception("Failed to write activity log (%s): %s", action, e)
-        await session.rollback()
+    log_entry = ActivityLog(
+        action=action,
+        success=success,
+        **data,
+    )
+    session.add(log_entry)
+    logger.debug("Successfully write activity log (%s)", action)
