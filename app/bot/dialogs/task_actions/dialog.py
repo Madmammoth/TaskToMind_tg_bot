@@ -25,6 +25,7 @@ from app.bot.dialogs.task_actions.handlers import (
     go_not_cancel_yes,
     go_to_list_selection,
     postpone,
+    go_delete_task_yes,
 )
 
 task_actions_dialog = Dialog(
@@ -146,6 +147,12 @@ task_actions_dialog = Dialog(
             text=Const("Редактировать"),
             id="task_edit",
             when=~F["canceled_at"] & ~F["completed_at"],
+        ),
+        SwitchTo(
+            text=Const("Удалить"),
+            id="delete_task",
+            state=TaskActionsDialogSG.delete_task_window,
+            when=F["completed_at"] | F["canceled_at"],
         ),
         Cancel(Const("🔙 Выйти из задачи")),
         Start(
@@ -326,6 +333,25 @@ task_actions_dialog = Dialog(
         ),
         getter=get_dialog_data,
         state=TaskActionsDialogSG.not_cancel_task_window,
+    ),
+    WindowWithoutInput(
+        Const("Удалить задачу?\n"),
+        Format("<b>{task_title}</b>"),
+        Const("\n<i>Восстановить задачу будет невозможно</i>"),
+        Row(
+            Button(
+                text=Const("✅ Да"),
+                id="yes",
+                on_click=go_delete_task_yes,
+            ),
+            SwitchTo(
+                text=Const("❌ Нет"),
+                id="no",
+                state=TaskActionsDialogSG.main_task_window
+            ),
+        ),
+        getter=get_dialog_data,
+        state=TaskActionsDialogSG.delete_task_window,
     ),
     on_start=update_dialog_data_from_start,
     on_process_result=update_dialog_data_from_result,

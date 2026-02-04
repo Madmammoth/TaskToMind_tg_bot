@@ -7,12 +7,13 @@ from app.database.crud.task import (
     change_list_for_task,
     not_complete_task,
     cancel_task,
-    not_cancel_task
+    not_cancel_task,
+    db_delete_task,
 )
 from app.database.crud.task_list import (
     get_user_archive_list_id,
     get_previous_list_id,
-    get_user_trash_list_id
+    get_user_trash_list_id,
 )
 from app.database.crud.tracking import log_activity
 from app.database.models import TaskStatusEnum
@@ -22,7 +23,7 @@ from app.database.services.task import (
     update_users_stats_achievs_on_task_completed,
     update_users_stats_achievs_on_task_uncompleted,
     update_users_stats_achievs_on_task_canceled,
-    update_users_stats_achievs_on_task_uncanceled
+    update_users_stats_achievs_on_task_uncanceled,
 )
 
 logger = logging.getLogger(__name__)
@@ -276,6 +277,37 @@ async def not_cancel_task_with_stats_achievs_log(
             task_id=task_id,
             old_value=task_data.get("status"),
             new_value=task_data.get("status"),
+        )
+
+
+async def delete_task_with_log(
+        session: AsyncSession,
+        user_id: int,
+        task_data: dict,
+):
+    """
+    Обновляет базу данных при удалении задачи
+    :param session: сессия СУБД
+    :param user_id: ID пользователя, который удаляет задачу
+    :param task_data: параметры удаляемой задачи
+    :return: None
+    """
+    task_id = task_data.get("task_id")
+    logger.debug(
+        "Обновление базы данных при удалении пользователем id=%d задачи id=%d",
+        user_id, task_id,
+    )
+    async with session.begin():
+        await db_delete_task(session, task_id)
+        await log_activity(
+            session,
+            action="delete_task",
+            success=True,
+            user_id=user_id,
+        )
+        logger.debug(
+            "Обновлена база данных при удалении пользователем id=%d задачи id=%d",
+            user_id, task_id
         )
 
 

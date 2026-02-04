@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timezone
 
-from sqlalchemy import select, update, and_, exists, func
+from sqlalchemy import select, update, and_, exists, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import (
@@ -13,7 +13,7 @@ from app.database.models import (
     ListAccess,
     TaskInList,
     LevelEnum,
-    User
+    User,
 )
 
 logger = logging.getLogger(__name__)
@@ -489,3 +489,13 @@ async def not_cancel_task(
     )
     await session.execute(stmt)
     logger.debug("Задача id=%d в работе", task_id)
+
+
+async def db_delete_task(
+        session: AsyncSession,
+        task_id: int,
+):
+    logger.debug("Удаление задачи id=%d", task_id)
+    stmt = delete(Task).where(Task.task_id == task_id)
+    await session.execute(stmt)
+    logger.debug("Удалена задача id=%d", task_id)

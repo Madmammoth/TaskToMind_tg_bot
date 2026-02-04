@@ -34,6 +34,7 @@ class TaskActionsDialogSG(StatesGroup):
     not_complete_task_window = State()
     cancel_task_window = State()
     not_cancel_task_window = State()
+    delete_task_window = State()
     select_list_window = State()
     task_priority_window = State()
     task_urgency_window = State()
