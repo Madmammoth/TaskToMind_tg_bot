@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ../../docker-volumes/TaskToMind/postgres:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql
     ports:
       - "${POSTGRES_PORT}:5432"
     restart: unless-stopped
@@ -35,7 +35,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     volumes:
-      - ../../docker-volumes/TaskToMind/pgadmin:/var/lib/pgadmin
+      - pgadmin_data:/var/lib/pgadmin
     ports:
       - "${PGADMIN_PORT}:80"
     restart: unless-stopped
@@ -55,7 +55,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ../../docker-volumes/TaskToMind/redis:/data
+      - redis_data:/data
     restart: unless-stopped
     ports:
       - "${REDIS_PORT}:6379"
@@ -77,3 +77,20 @@ services:
         max-size: "10m"
         max-file: "5"
         compress: "true"
+
+  bot:
+    build: .
+    container_name: tg_bot
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  pgadmin_data:
