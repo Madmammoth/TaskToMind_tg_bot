@@ -73,7 +73,7 @@ class TaskList(Base, make_timestamp_mixin()):
 class ListAccess(Base, make_timestamp_mixin()):
     __tablename__ = "list_accesses"
     __table_args__ = (
-        CheckConstraint("position >= 1", name="check_list_position_min"),
+        CheckConstraint("position >= 0", name="check_list_position_min"),
         UniqueConstraint("user_id", "list_id"),
         UniqueConstraint("user_id", "parent_list_id", "position",
                          name="uq_user_parent_position"),

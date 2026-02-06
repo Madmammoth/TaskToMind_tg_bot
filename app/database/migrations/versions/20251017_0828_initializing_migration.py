@@ -671,7 +671,7 @@ def upgrade() -> None:
     sa.Column('position', sa.SmallInteger(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.CheckConstraint('position >= 1', name='check_list_position_min'),
+    sa.CheckConstraint('position >= 0', name='check_list_position_min'),
     sa.ForeignKeyConstraint(['granted_by'], ['users.telegram_id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['list_id'], ['lists.list_id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.telegram_id'], ondelete='CASCADE'),
