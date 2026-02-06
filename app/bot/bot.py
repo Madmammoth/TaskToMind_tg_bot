@@ -76,7 +76,9 @@ async def main():
             bot,
             owner_id=config.bot_settings.owner_id.get_secret_value()
         )
+    except asyncio.CancelledError:
+        logger.info("Bot stopped")
     except Exception as e:
-        logger.exception(e)
+        logger.exception("Bot crashed", e)
     finally:
         await bot.session.close()
