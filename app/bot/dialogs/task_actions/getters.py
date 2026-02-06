@@ -31,7 +31,7 @@ async def get_task(
     )
     task_data = make_task_data_for_dialog(task, task_list, access, timezone)
     dialog_manager.dialog_data.update(to_dialog_safe(task_data))
-    if task_data["status"] == TaskStatusEnum.NEW:
+    if task_data["status"] == TaskStatusEnum.NEW.value:
         await mark_task_in_process(session, task_id, user_id)
         logger.debug("Статус задачи изменён с «Новая» на «В работе»")
     logger.debug("Получен task_data=%s", task_data)
