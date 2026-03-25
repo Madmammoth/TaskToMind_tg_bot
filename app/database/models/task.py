@@ -184,5 +184,5 @@ class TaskAccess(Base, make_timestamp_mixin()):
     )
 
     def __repr__(self):
-        return (f"<TaskAccess user_id={self.user_id}, task_id={self.list_id}, "
+        return (f"<TaskAccess user_id={self.user_id}, task_id={self.task_id}, "
                 f"role={self.role.value}>")
