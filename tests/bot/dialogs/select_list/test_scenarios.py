@@ -3,16 +3,16 @@ from unittest.mock import patch, AsyncMock
 
 import pytest
 
-from app.bot.dialogs.enums import ListSelectionMode
-from app.bot.dialogs.select_list.scenarios import (
+from app.modules.todo.ui.dialogs.enums import ListSelectionMode
+from app.modules.todo.ui.dialogs.select_list.scenarios import (
     CreateTaskScenario,
     EditTaskScenario,
     CreateListScenario,
     EditListScenario,
     get_select_list_scenario,
 )
-from app.database.models import SystemListTypeEnum
-from app.utils.serialization import to_dialog_safe
+from app.modules.todo.models import SystemListTypeEnum
+from app.core.utils.dialog_serialization import to_dialog_safe
 
 FAKE_LISTS = [
     SimpleNamespace(

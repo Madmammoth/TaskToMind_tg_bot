@@ -1,6 +1,6 @@
 import pytest
 
-from app.bot.dialogs.create_task.handlers import go_priority
+from app.modules.todo.ui.dialogs.create_task.handlers import go_priority
 from tests.bot.mocks import MockButton
 
 

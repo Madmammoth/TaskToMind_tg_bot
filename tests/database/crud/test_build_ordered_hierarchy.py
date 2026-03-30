@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from app.database.services.task_list import build_ordered_hierarchy
+from app.modules.todo.services.task_list import build_ordered_hierarchy
 
 
 def fake_list(

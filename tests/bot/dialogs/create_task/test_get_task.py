@@ -3,7 +3,7 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from app.bot.dialogs.create_task.getters import get_task
+from app.modules.todo.ui.dialogs.create_task.getters import get_task
 
 
 class AddTaskWindowContract(BaseModel):

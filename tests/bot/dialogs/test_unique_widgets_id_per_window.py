@@ -1,8 +1,8 @@
 import pytest
 from aiogram_dialog import Dialog
 
-from app.bot.dialogs import dialogs
-from app.bot.dialogs.id_uniqueness_validator import validate_dialog
+from app.modules.todo.ui.dialogs import dialogs
+from app.modules.todo.ui.dialogs.id_uniqueness_validator import validate_dialog
 
 
 @pytest.mark.parametrize("dialog", dialogs)

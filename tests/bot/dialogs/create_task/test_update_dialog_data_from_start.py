@@ -1,6 +1,6 @@
 import pytest
 
-from app.bot.dialogs.common.handlers import update_dialog_data_from_start
+from app.modules.todo.ui.dialogs.common.handlers import update_dialog_data_from_start
 
 
 @pytest.mark.asyncio

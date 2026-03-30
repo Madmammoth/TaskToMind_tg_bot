@@ -1,8 +1,8 @@
 import pytest
 
-from app.bot.dialogs.common.handlers import update_dialog_data_from_start
-from app.bot.dialogs.start.handlers import go_create_task
-from app.bot.dialogs.states import CreateTaskDialogSG
+from app.modules.todo.ui.dialogs.common.handlers import update_dialog_data_from_start
+from app.modules.todo.ui.dialogs.start.handlers import go_create_task
+from app.modules.todo.ui.dialogs.states import CreateTaskDialogSG
 from tests.bot.mocks import MockButton
 
 

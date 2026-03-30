@@ -2,8 +2,8 @@ from unittest.mock import Mock, AsyncMock
 
 import pytest
 
-from app.bot.dialogs.enums import ListSelectionMode
-from app.bot.dialogs.select_list.handlers import select_list_core
+from app.modules.todo.ui.dialogs.enums import ListSelectionMode
+from app.modules.todo.ui.dialogs.select_list.handlers import select_list_core
 from tests.bot.mocks import FakeSubManager
 
 

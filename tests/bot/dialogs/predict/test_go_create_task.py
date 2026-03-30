@@ -3,8 +3,8 @@ from typing import Optional
 import pytest
 from pydantic import BaseModel
 
-from app.bot.dialogs.start.handlers import go_create_task
-from app.bot.dialogs.states import CreateTaskDialogSG
+from app.modules.todo.ui.dialogs.start.handlers import go_create_task
+from app.modules.todo.ui.dialogs.states import CreateTaskDialogSG
 from tests.bot.conftest import mock_callback
 from tests.bot.mocks import MockButton
 

@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.bot.dialogs.create_task.handlers import correct_text_task_input
+from app.modules.todo.ui.dialogs.create_task.handlers import correct_text_task_input
 from tests.bot.mocks import MockMessage
 
 

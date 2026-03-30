@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from app.bot.dialogs.enums import ListSelectionMode
-from app.bot.dialogs.select_list.getters import lists_getter_core
-from app.utils.serialization import to_dialog_safe
+from app.modules.todo.ui.dialogs.enums import ListSelectionMode
+from app.modules.todo.ui.dialogs.select_list import lists_getter_core
+from app.core.utils.dialog_serialization import to_dialog_safe
 from tests.bot.mocks.mock_dialog import FakeSelectListScenario
 
 

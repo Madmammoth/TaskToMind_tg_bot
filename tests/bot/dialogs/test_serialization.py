@@ -2,8 +2,8 @@ from datetime import datetime, date
 
 import pytest
 
-from app.database.models import GenderEnum, LevelEnum, SystemListTypeEnum
-from app.utils.serialization import to_dialog_safe, from_dialog_safe
+from app.modules.todo.models import GenderEnum, LevelEnum, SystemListTypeEnum
+from app.core.utils.dialog_serialization import to_dialog_safe, from_dialog_safe
 
 
 def test_to_dialog_safe_enum_positive():
